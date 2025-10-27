@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hilfe – Drum Hero Lite</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* kleine Ergänzungen nur für diese Seite, ohne das bestehende Styling zu verändern */
+    .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+    pre { overflow: auto; background: #111; color: #eee; padding: 12px; border-radius: 6px; }
+    code { white-space: pre; }
+    .back { margin: 12px 0 24px; display: inline-block; }
+    h1, h2, h3 { margin-top: 1.2em; }
+    ul { margin-left: 1.25em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back" href="index.html">← Zurück zur App</a>
+    <h1>Hilfe & Format‑Hinweise</h1>
+
+    <p>Drum Hero Lite unterstützt zwei Import‑Formate: klassisches Drum‑ASCII mit Zeilen für HH/SN/BD und Gitarren‑Tab‑ähnliche Zeilen mit zweistelligen MIDI‑Zahlen auf den Saitenlabels <code>E/A/D/G/B/e</code>. Diese Seite erklärt die Formate und zeigt, wie du aus Songsterr in ein passendes ASCII‑Tab exportierst.</p>
+
+    <h2>Empfohlener Workflow (Songsterr → ASCII Tab)</h2>
+    <ol>
+      <li>Öffne den Song bei <strong>Songsterr</strong>.</li>
+      <li>Exportiere dort als <strong>Guitar Pro</strong> Datei (GP).</li>
+      <li>Öffne die GP‑Datei mit <strong>TuxGuitar</strong>.</li>
+      <li>Lösche in TuxGuitar alle Spuren außer der <strong>Percussion/Drums‑Spur</strong>.</li>
+      <li>Exportiere anschließend als <strong>ASCII</strong> (<code>.tab</code>).</li>
+      <li>Die erzeugte <code>.tab</code>‑Datei kannst du in der App laden (Button „Tab‑Datei“).</li>
+    </ol>
+
+    <h2>Unterstützte Import‑Formate</h2>
+    <h3>1) Drum‑ASCII (HH/SN/BD)</h3>
+    <ul>
+      <li>Zeilen beginnen mit einem Label und <code>|</code> oder <code>:</code>, z. B. <code>HH|x-x-|</code>, <code>SN: --o-</code>, <code>BD|o---|</code>.</li>
+      <li>Erkannte Spuren: HH (Hi‑Hat/Becken), SN (Snare), BD (Bass/Kick). Alias u. a. H/CH, S/SD, K/Kick.</li>
+      <li>Alles außer <code>-</code> ist ein Treffer; <code>|</code> sind Taktstriche und werden ignoriert.</li>
+      <li>Alle Spuren sollten gleich viele Schritte haben; fehlende werden mit <code>-</code> aufgefüllt.</li>
+    </ul>
+
+    <h3>2) Gitarren‑Tab mit MIDI‑Zahlen (E/A/D/G/B/e)</h3>
+    <ul>
+      <li>Jede Zeile trägt ein Saiten‑Label (<code>E</code>, <code>A</code>, <code>D</code>, <code>G</code>, <code>B</code>, <code>e</code>).</li>
+      <li>Im Verlauf stehen zweistellige <strong>MIDI‑Noten</strong> (z. B. 42, 38, 36). Direkt aufeinanderfolgende Ziffern werden paarweise als zweistellige Tokens gelesen: <code>3838</code> → <code>38, 38</code>.</li>
+      <li>Die Ereignisse werden am Index der ersten Ziffer verortet, die Ausrichtung im Raster bleibt erhalten.</li>
+      <li><code>|</code> werden ignoriert, <code>-</code> sind Leer‑Schritte.</li>
+    </ul>
+
+    <h3>MIDI → Spur‑Mapping (erweiterte Spuren)</h3>
+    <ul>
+      <li><strong>Bassdrum</strong>: 35, 36 → <code>BD</code></li>
+      <li><strong>Snare</strong>: 37–40 → <code>Snare</code></li>
+      <li><strong>Toms</strong> (hoch → tief): 50 → <code>Tom High</code>, 48 → <code>Tom High‑Mid</code>, 47 → <code>Tom Low‑Mid</code>, 45 → <code>Tom Low</code>, 43 → <code>Floor Tom High</code>, 41 → <code>Floor Tom Low</code></li>
+      <li><strong>Hi‑Hat</strong>: 42 → <code>Hi‑Hat geschlossen</code>, 44 → <code>Hi‑Hat Pedal</code>, 46 → <code>Hi‑Hat offen</code></li>
+      <li><strong>Becken</strong>: 49 → <code>Crash 1</code>, 57 → <code>Crash 2</code>, 51/59 → <code>Ride</code>, 53 → <code>Ride Bell</code>, 52 → <code>China</code>, 55 → <code>Splash</code></li>
+    </ul>
+    <p>Spuren werden nur angezeigt, wenn es in der aktuellen Datei auch Noten für diese Spur gibt.</p>
+
+    <h3>Beispiel: Gitarren‑Tab → Drum‑ASCII</h3>
+    <pre><code>E|-42--42--42-|
+G|-38---------|
+A|-36---------|
+
+HH|x-x-|x-x-|x-x-|
+SN|----|o---|----|
+BD|o---|----|o---|
+</code></pre>
+
+    <h2>Datei‑Upload & Header</h2>
+    <ul>
+      <li>Du kannst eine <code>.tab</code>/<code>.txt</code> laden. Header‑Zeilen am Anfang werden erkannt und oben angezeigt, z. B.:</li>
+    </ul>
+    <pre><code>Title:
+      Stairway to Heaven
+Artist:
+      Led Zeppelin
+Album:
+
+Author:
+
+Track 1:
+      John Bonham | Ludwig Classic Maple Green Sparkle | Drums
+</code></pre>
+    <p>Diese Header werden beim Parsen der Notenzeilen ignoriert.</p>
+
+    <h2>Tempo & Metronom</h2>
+    <p>Stelle im HUD oben rechts das <strong>Tempo (BPM)</strong> und den <strong>Einzähler</strong> ein. Das <strong>Metronom</strong> lässt sich mit dem Schalter ein‑/ausschalten. Das Raster ist aktuell auf 4/4 mit 4 Schritten pro Schlag (16tel) ausgelegt.</p>
+
+    <h2>Format‑Erkennung & Override</h2>
+    <p>Die App erkennt das Import‑Format automatisch und zeigt es oben rechts als Badge an, z. B.: <em>Format: Drum‑ASCII</em> oder <em>Format: Gitarren‑Tab</em>.</p>
+    <p>Falls nötig, kannst du per Klick auf die Format‑Badge die Erkennung übersteuern (zyklisch). Die Badge zeigt dann <em>Drum‑ASCII (erzwungen)</em> oder <em>Gitarren‑Tab (erzwungen)</em>. Ein weiterer Klick stellt die automatische Erkennung wieder her.</p>
+
+    <h2>Hinweise & Grenzen</h2>
+    <ul>
+      <li>Bei Gitarren‑Tabs werden nur zweistellige MIDI‑Zahlen berücksichtigt; einzelne Ziffern werden verworfen.</li>
+      <li>Falls in einem Text sowohl HH/SN/BD als auch Gitarren‑Saiten vorkommen, hat das Drum‑ASCII Vorrang.</li>
+      <li>Raster: aktuell fest auf 4/4 (Takt) mit 4 Schritten pro Schlag (16tel).</li>
+    </ul>
+
+    <p><a class="back" href="index.html">← Zurück zur App</a></p>
+  </div>
+  <footer>
+    <p>Made with <span aria-label="love" title="love">❤</span> in Leipzig · 
+      <a class="icon-link" href="https://github.com/panvid/drum-hero-lite" target="_blank" rel="noopener" title="GitHub Repository" aria-label="GitHub">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      · Hinweis: Diese Seite und der Code sind KI‑generiert.</p>
+  </footer>
+</body>
+</html>
