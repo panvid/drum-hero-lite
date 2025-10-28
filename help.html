@@ -7,106 +7,155 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* kleine Ergänzungen nur für diese Seite, ohne das bestehende Styling zu verändern */
-    .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+    /* Seite-spezifische, kleine Ergänzungen */
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .back { margin: 12px 0 24px; display: inline-block; }
+    .toc { background: #0e0e0e; border: 1px solid #222; border-radius: 8px; padding: 12px; }
+    .toc h2 { margin: 0 0 8px 0; font-size: 1.05rem; }
+    .toc ul { columns: 2; column-gap: 24px; margin: 0; padding-left: 18px; }
+    @media (max-width: 720px) { .toc ul { columns: 1; } }
+    h1, h2, h3 { margin-top: 1.2em; }
     pre { overflow: auto; background: #111; color: #eee; padding: 12px; border-radius: 6px; }
     code { white-space: pre; }
-    .back { margin: 12px 0 24px; display: inline-block; }
-    h1, h2, h3 { margin-top: 1.2em; }
-    ul { margin-left: 1.25em; }
+    .note { background: #111; border: 1px solid #222; padding: 8px 12px; border-radius: 6px; }
+    .step { margin: 0; padding-left: 18px; }
   </style>
 </head>
 <body>
   <div class="container">
     <a class="back" href="index.html">← Zurück zur App</a>
-    <h1>Hilfe & Format‑Hinweise</h1>
+    <h1>Hilfe • Anleitung nach Fällen</h1>
+    <p>Diese Seite führt dich Schritt für Schritt durch alle unterstützten Wege, Inhalte in Drum Hero Lite zu bringen. Wähle den passenden Fall für deine Ausgangsdaten.</p>
 
-    <p>Drum Hero Lite unterstützt drei Import‑Wege: (1) klassisches Drum‑ASCII mit Zeilen für HH/SN/BD, (2) Gitarren‑Tab‑ähnliche Zeilen mit zweistelligen MIDI‑Zahlen auf den Saitenlabels <code>E/A/D/G/B/e</code> und (3) Standard‑MIDI‑Dateien (<code>.mid/.midi</code>). Diese Seite erklärt die Formate und zeigt, wie du aus Songsterr in ein passendes ASCII‑Tab exportierst.</p>
+    <nav class="toc" aria-label="Inhaltsverzeichnis">
+      <h2>Inhaltsverzeichnis</h2>
+      <ul>
+        <li><a href="#schnellstart">Schnellstart</a></li>
+        <li><a href="#fall-a">Fall A: Ich habe Drum‑ASCII (HH/SN/BD)</a></li>
+        <li><a href="#fall-b">Fall B: Ich habe Gitarren‑Tabs mit MIDI‑Zahlen</a></li>
+        <li><a href="#fall-c">Fall C: Ich habe eine Standard‑MIDI‑Datei (.mid/.midi)</a></li>
+        <li><a href="#fall-d">Fall D: Ich habe einen Songsterr‑Song (GP → ASCII)</a></li>
+        <li><a href="#fall-e">Fall E: Ich möchte Tabs manuell eintippen</a></li>
+        <li><a href="#format">Format‑Erkennung & manuelles Umschalten</a></li>
+        <li><a href="#header">Datei‑Header (Titel/Artist/…)</a></li>
+        <li><a href="#steuerung">Steuerung: Tempo, Einzähler, Metronom, Vollbild</a></li>
+        <li><a href="#mapping">MIDI‑Noten → Drum‑Spuren</a></li>
+        <li><a href="#tipps">Tipps & Fehlersuche</a></li>
+      </ul>
+    </nav>
 
-    <h2>Empfohlener Workflow (Songsterr → ASCII Tab)</h2>
-    <ol>
-      <li>Öffne den Song bei <strong>Songsterr</strong>.</li>
-      <li>Exportiere dort als <strong>Guitar Pro</strong> Datei (GP).</li>
-      <li>Öffne die GP‑Datei mit <strong>TuxGuitar</strong>.</li>
-      <li>Lösche in TuxGuitar alle Spuren außer der <strong>Percussion/Drums‑Spur</strong>.</li>
-      <li>Exportiere anschließend als <strong>ASCII</strong> (<code>.tab</code>).</li>
-      <li>Die erzeugte <code>.tab</code>‑Datei kannst du in der App laden (Button „Tab‑Datei“).</li>
+    <h2 id="schnellstart">Schnellstart</h2>
+    <ol class="step">
+      <li>Klicke auf „Tab‑Datei“ und wähle eine <code>.tab</code>, <code>.txt</code>, <code>.mid</code> oder <code>.midi</code> Datei.</li>
+      <li>Bei Textdateien kannst du alternativ den Inhalt direkt in das große Textfeld „Tabs“ einfügen.</li>
+      <li>Klicke auf „Tabs parsen“. Die Noten erscheinen im Raster. Starte mit ▶️, pausiere ⏸️, stoppe ⏹️.</li>
+      <li>Stelle bei Bedarf BPM, Einzähler und Metronom ein. Vollbild mit ⛶.</li>
     </ol>
 
-    <h2>Unterstützte Import‑Formate</h2>
-    <h3>1) Drum‑ASCII (HH/SN/BD)</h3>
-    <ul>
-      <li>Zeilen beginnen mit einem Label und <code>|</code> oder <code>:</code>, z. B. <code>HH|x-x-|</code>, <code>SN: --o-</code>, <code>BD|o---|</code>.</li>
-      <li>Erkannte Spuren: HH (Hi‑Hat/Becken), SN (Snare), BD (Bass/Kick). Alias u. a. H/CH, S/SD, K/Kick.</li>
-      <li>Alles außer <code>-</code> ist ein Treffer; <code>|</code> sind Taktstriche und werden ignoriert.</li>
-      <li>Alle Spuren sollten gleich viele Schritte haben; fehlende werden mit <code>-</code> aufgefüllt.</li>
-    </ul>
-
-    <h3>2) Gitarren‑Tab mit MIDI‑Zahlen (E/A/D/G/B/e)</h3>
-    <ul>
-      <li>Jede Zeile trägt ein Saiten‑Label (<code>E</code>, <code>A</code>, <code>D</code>, <code>G</code>, <code>B</code>, <code>e</code>).</li>
-      <li>Im Verlauf stehen zweistellige <strong>MIDI‑Noten</strong> (z. B. 42, 38, 36). Direkt aufeinanderfolgende Ziffern werden paarweise als zweistellige Tokens gelesen: <code>3838</code> → <code>38, 38</code>.</li>
-      <li>Die Ereignisse werden am Index der ersten Ziffer verortet, die Ausrichtung im Raster bleibt erhalten.</li>
-      <li><code>|</code> werden ignoriert, <code>-</code> sind Leer‑Schritte.</li>
-    </ul>
-
-    <h3>3) Standard‑MIDI‑Datei (.mid/.midi)</h3>
-    <ul>
-      <li>Erkennung über Dateiendung <code>.mid/.midi</code> oder Magic‑Header <code>MThd</code> im Datei‑Header.</li>
-      <li>Geparst direkt im Browser (ohne Server). Es werden Note‑On‑Ereignisse auf <strong>Kanal 10</strong> (GM‑Percussion) ausgelesen.</li>
-      <li>Die Drum‑Noten werden auf die vorhandenen Spuren gemappt (siehe Mapping unten) und auf das eingestellte Raster (z. B. 16tel, <em>spb</em>) quantisiert.</li>
-      <li>Tempo‑Events werden aktuell nicht ausgewertet; die Darstellung richtet sich nach dem gewählten Raster in der App.</li>
-    </ul>
-
-    <h3>MIDI → Spur‑Mapping (erweiterte Spuren)</h3>
-    <ul>
-      <li><strong>Bassdrum</strong>: 35, 36 → <code>BD</code></li>
-      <li><strong>Snare</strong>: 37–40 → <code>Snare</code></li>
-      <li><strong>Toms</strong> (hoch → tief): 50 → <code>Tom High</code>, 48 → <code>Tom High‑Mid</code>, 47 → <code>Tom Low‑Mid</code>, 45 → <code>Tom Low</code>, 43 → <code>Floor Tom High</code>, 41 → <code>Floor Tom Low</code></li>
-      <li><strong>Hi‑Hat</strong>: 42 → <code>Hi‑Hat geschlossen</code>, 44 → <code>Hi‑Hat Pedal</code>, 46 → <code>Hi‑Hat offen</code></li>
-      <li><strong>Becken</strong>: 49 → <code>Crash 1</code>, 57 → <code>Crash 2</code>, 51/59 → <code>Ride</code>, 53 → <code>Ride Bell</code>, 52 → <code>China</code>, 55 → <code>Splash</code></li>
-    </ul>
-    <p>Spuren werden nur angezeigt, wenn es in der aktuellen Datei auch Noten für diese Spur gibt.</p>
-
-    <h3>Beispiel: Gitarren‑Tab → Drum‑ASCII</h3>
-    <pre><code>E|-42--42--42-|
-G|-38---------|
-A|-36---------|
-
-HH|x-x-|x-x-|x-x-|
+    <h2 id="fall-a">Fall A: Ich habe Drum‑ASCII (HH/SN/BD)</h2>
+    <ol class="step">
+      <li>Stelle sicher, dass deine Zeilen Labels wie <code>HH</code>, <code>SN</code>, <code>BD</code> tragen, gefolgt von <code>|</code> oder <code>:</code>.</li>
+      <li>Zeichne Treffer mit beliebigen Zeichen außer <code>-</code> (z. B. <code>x</code>, <code>o</code>, <code>*</code>). Taktstriche <code>|</code> sind optional.</li>
+      <li>Kopiere den Text in das Feld „Tabs“ oder lade die Datei über „Tab‑Datei“.</li>
+      <li>Klicke „Tabs parsen“. Die App erkennt das Format als „Drum‑ASCII“.</li>
+    </ol>
+    <p>Beispiel:</p>
+    <pre><code>HH|x-x-|x-x-|x-x-|
 SN|----|o---|----|
 BD|o---|----|o---|
 </code></pre>
+    <p class="note">Erkannte Aliase: HH/H/CH, SN/S/SD, BD/B/K/Kick. Alle Spuren sollten gleich viele Schritte haben; fehlende werden mit <code>-</code> aufgefüllt.</p>
 
-    <h2>Datei‑Upload & Header</h2>
+    <h2 id="fall-b">Fall B: Ich habe Gitarren‑Tabs mit MIDI‑Zahlen</h2>
+    <ol class="step">
+      <li>Nutze die sechs Saiten‑Labels <code>E</code>, <code>A</code>, <code>D</code>, <code>G</code>, <code>B</code>, <code>e</code>.</li>
+      <li>Setze zweistellige MIDI‑Zahlen (z. B. 42, 38, 36) an die gewünschten Positionen. Direkt hintereinanderstehende Ziffern werden paarweise gelesen: <code>3838</code> → <code>38, 38</code>.</li>
+      <li>Optional: Taktstriche <code>|</code> zur Orientierung; <code>-</code> für Leerschritte.</li>
+      <li>Einfügen in „Tabs“ oder Datei laden → „Tabs parsen“.</li>
+    </ol>
+    <p>Mini‑Beispiel (Hi‑Hat 42, Snare 38, Kick 36):</p>
+    <pre><code>E|-42--42--42-|
+G|-38---------|
+A|-36---------|
+</code></pre>
+    <p class="note">Die Ereignisse werden an der Position der ersten Ziffer verortet; die vertikale Ausrichtung im Raster bleibt erhalten.</p>
+
+    <h2 id="fall-c">Fall C: Ich habe eine Standard‑MIDI‑Datei (.mid/.midi)</h2>
+    <ol class="step">
+      <li>Lade die Datei über „Tab‑Datei“ (unterstützt: <code>.mid</code>, <code>.midi</code>). Die Erkennung erfolgt über Endung oder den Header <code>MThd</code>.</li>
+      <li>Die App liest Note‑On‑Events auf <strong>Kanal 10</strong> (GM‑Percussion) und mappt sie auf Drum‑Spuren (siehe Mapping).</li>
+      <li>Die Noten werden auf das interne Raster (4/4, 4 Schritte pro Schlag = 16tel) quantisiert.</li>
+      <li>Tempo‑Events der MIDI‑Datei werden derzeit nicht übernommen – nutze die BPM‑Einstellung in der App.</li>
+    </ol>
+
+    <h2 id="fall-d">Fall D: Ich habe einen Songsterr‑Song (GP → ASCII)</h2>
+    <ol class="step">
+      <li>Öffne den Song bei <strong>Songsterr</strong> und exportiere als <strong>Guitar Pro</strong> (GP).</li>
+      <li>Öffne die GP‑Datei in <strong>TuxGuitar</strong> (kostenlos).</li>
+      <li>Lösche alle Spuren außer der <strong>Drums/Percussion‑Spur</strong>.</li>
+      <li>Exportiere als <strong>ASCII</strong> (<code>.tab</code>).</li>
+      <li>Lade die erzeugte <code>.tab</code> in Drum Hero Lite und klicke „Tabs parsen“.</li>
+    </ol>
+
+    <h2 id="fall-e">Fall E: Ich möchte Tabs manuell eintippen</h2>
+    <ol class="step">
+      <li>Wähle dein Zielformat:
+        <ul>
+          <li>Einfacher: Drum‑ASCII mit <code>HH</code>/<code>SN</code>/<code>BD</code>.</li>
+          <li>Fortgeschritten: Gitarren‑Tab‑Layout mit MIDI‑Zahlen.</li>
+        </ul>
+      </li>
+      <li>Tippe die Zeilen direkt in das Feld „Tabs“. Nutze <code>|</code> als Taktstriche und <code>-</code> für Leerschritte.</li>
+      <li>Klicke „Tabs parsen“. Falls die Erkennung danebenliegt, siehe <a href="#format">Format‑Erkennung & Umschalten</a>.</li>
+    </ol>
+
+    <h2 id="format">Format‑Erkennung & manuelles Umschalten</h2>
+    <p>Die App erkennt das Format automatisch und zeigt es als Badge oben im Bereich „Format: …“ an.</p>
     <ul>
-      <li>Du kannst eine <code>.tab</code>/<code>.txt</code> laden. Header‑Zeilen am Anfang werden erkannt und oben angezeigt, z. B.:</li>
+      <li>Ein Klick auf die Badge schaltet zyklisch: Automatisch → Drum‑ASCII (erzwungen) → Gitarren‑Tab (erzwungen) → Automatisch.</li>
+      <li>Bei MIDI‑Dateien ist kein Override nötig; diese werden als MIDI erkannt und direkt geparst.</li>
     </ul>
+
+    <h2 id="header">Datei‑Header (Titel/Artist/…)</h2>
+    <p>Textdateien können optionale Header am Anfang enthalten. Diese werden oben in der App angezeigt, aber beim Parsen der Noten ignoriert.</p>
+    <p>Beispiel‑Header:</p>
     <pre><code>Title:
-      Stairway to Heaven
+  Stairway to Heaven
 Artist:
-      Led Zeppelin
+  Led Zeppelin
 Album:
 
 Author:
 
 Track 1:
-      John Bonham | Ludwig Classic Maple Green Sparkle | Drums
+  John Bonham | Ludwig Classic Maple Green Sparkle | Drums
 </code></pre>
-    <p>Diese Header werden beim Parsen der Notenzeilen ignoriert.</p>
 
-    <h2>Tempo & Metronom</h2>
-    <p>Stelle im HUD oben rechts das <strong>Tempo (BPM)</strong> und den <strong>Einzähler</strong> ein. Das <strong>Metronom</strong> lässt sich mit dem Schalter ein‑/ausschalten. Das Raster ist aktuell auf 4/4 mit 4 Schritten pro Schlag (16tel) ausgelegt.</p>
-
-    <h2>Format‑Erkennung & Override</h2>
-    <p>Die App erkennt das Import‑Format automatisch und zeigt es oben rechts als Badge an, z. B.: <em>Format: Drum‑ASCII</em> oder <em>Format: Gitarren‑Tab</em>.</p>
-    <p>Falls nötig, kannst du per Klick auf die Format‑Badge die Erkennung übersteuern (zyklisch). Die Badge zeigt dann <em>Drum‑ASCII (erzwungen)</em> oder <em>Gitarren‑Tab (erzwungen)</em>. Ein weiterer Klick stellt die automatische Erkennung wieder her.</p>
-
-    <h2>Hinweise & Grenzen</h2>
+    <h2 id="steuerung">Steuerung: Tempo, Einzähler, Metronom, Vollbild</h2>
     <ul>
-      <li>Bei Gitarren‑Tabs werden nur zweistellige MIDI‑Zahlen berücksichtigt; einzelne Ziffern werden verworfen.</li>
-      <li>Falls in einem Text sowohl HH/SN/BD als auch Gitarren‑Saiten vorkommen, hat das Drum‑ASCII Vorrang.</li>
-      <li>Raster: aktuell fest auf 4/4 (Takt) mit 4 Schritten pro Schlag (16tel).</li>
+      <li><strong>BPM</strong>: Tempo der Wiedergabe.</li>
+      <li><strong>Einz</strong>: Länge des Einzählers in Sekunden.</li>
+      <li><strong>Met</strong>: Schalter für Metronom an/aus.</li>
+      <li><strong>⛶ Vollbild</strong>: Bühne in den Vollbild‑Modus schalten.</li>
+    </ul>
+
+    <h2 id="mapping">MIDI‑Noten → Drum‑Spuren</h2>
+    <ul>
+      <li><strong>Bassdrum</strong>: 35, 36 → BD</li>
+      <li><strong>Snare</strong>: 37–40 → Snare</li>
+      <li><strong>Toms</strong> (hoch → tief): 50 (Tom High), 48 (Tom High‑Mid), 47 (Tom Low‑Mid), 45 (Tom Low), 43 (Floor Tom High), 41 (Floor Tom Low)</li>
+      <li><strong>Hi‑Hat</strong>: 42 (geschlossen), 44 (Pedal), 46 (offen)</li>
+      <li><strong>Becken</strong>: 49 (Crash 1), 57 (Crash 2), 51/59 (Ride), 53 (Ride Bell), 52 (China), 55 (Splash)</li>
+    </ul>
+    <p>Spuren werden nur angezeigt, wenn in der geladenen Datei Noten für diese Spur vorhanden sind.</p>
+
+    <h2 id="tipps">Tipps & Fehlersuche</h2>
+    <ul>
+      <li><strong>Nichts wird erkannt?</strong> Prüfe, ob Zeilenlabels stimmen (z. B. <code>HH</code>/<code>SN</code>/<code>BD</code> oder <code>E/A/D/G/B/e</code>). Entferne führende Leerzeichen.</li>
+      <li><strong>Zahlen im Gitarren‑Tab werden falsch gruppiert?</strong> Nur zweistellige MIDI‑Zahlen werden gelesen. Schreibe sie ohne Trennzeichen direkt hintereinander oder trenne sie mit <code>-</code>.</li>
+      <li><strong>Timing versetzt?</strong> Das Raster ist derzeit fest auf 4/4 mit 4 Schritten pro Schlag (16tel). Passe deine Tab‑Breite entsprechend an.</li>
+      <li><strong>MIDI klingt zu schnell/langsam?</strong> Stelle das gewünschte Tempo mit BPM in der App ein (Tempo‑Events aus MIDI werden nicht übernommen).</li>
+      <li><strong>Gemischte Inhalte im Text?</strong> Drum‑ASCII hat Vorrang vor Gitarren‑Saiten. Nutze ggf. die Format‑Badge zum Übersteuern.</li>
     </ul>
 
     <p><a class="back" href="index.html">← Zurück zur App</a></p>
