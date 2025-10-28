@@ -21,7 +21,11 @@
         Tab-Datei
       </label>
       <button id="btnParse"><span class="icon" aria-hidden="true">🪄</span>Tabs parsen</button>
-      <button id="btnDemo"><span class="icon" aria-hidden="true">✨</span>Demo laden</button>
+      <select id="demoSelect" title="Demo auswählen">
+        <option value="" selected disabled>Demo auswählen …</option>
+        <option value="classic">Demo: Drum‑ASCII</option>
+        <option value="guitar">Demo: Gitarren‑Tab (MIDI‑Zahlen)</option>
+      </select>
     </div>
     <div class="row">
       <div id="fileMeta" class="file-meta"></div>
@@ -29,22 +33,15 @@
     </div>
   </section>
   
-  <section class="controls">
-    <div class="row">
-      <label class="field" title="Spur-Sounds aktivieren">
-        <span class="mini">Töne</span>
-      </label>
-      <div id="soundPanel" class="sound-panel" title="Wähle die Spuren, die klingen sollen (Checkboxen)"></div>
-    </div>
-  </section>
-  
   <section class="workspace">
     <div class="editor">
       <label for="tabs">Tabs</label>
       <textarea id="tabs" spellcheck="false" placeholder="Füge hier deine Songsterr/ASCII Drum Tabs ein..."></textarea>
+      <div id="legend" class="legend" aria-live="polite" aria-label="Legende"></div>
     </div>
 
     <div class="stage">
+      <div id="laneLabels" class="lane-labels" aria-label="Spuren" role="group"></div>
       <canvas id="stage" width="900" height="600"></canvas>
       <div class="hud" aria-label="Transport und Tempo">
         <button id="btnStart" class="icon-btn" title="Start / Fortsetzen" aria-label="Start"><span class="icon" aria-hidden="true">▶️</span></button>

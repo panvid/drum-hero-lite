@@ -13,6 +13,8 @@
   const tsNumEl = $('#tsNum');
   const tsDenEl = $('#tsDen');
   const formatBadgeEl = document.getElementById('formatBadge');
+  const legendEl = document.getElementById('legend');
+  const laneLabelsEl = document.getElementById('laneLabels');
   // Formatsteuerung: immer Auto, optional Override durch Klick auf Badge
   let currentFormatMode = 'auto'; // 'auto' | 'classic' | 'guitar'
 
@@ -20,7 +22,7 @@
   const btnStart = $('#btnStart');
   const btnPause = $('#btnPause');
   const btnStop = $('#btnStop');
-  const btnDemo = $('#btnDemo');
+  const demoSelect = $('#demoSelect');
   const fileInput = $('#fileInput');
   const btnFullscreen = $('#btnFullscreen');
 
@@ -52,30 +54,82 @@
   const ctx = canvas.getContext('2d');
   // Breite pro Step und Innenabstände für Labels/Canvas
   const STEP_PX = 28; // Pixel pro Schritt für horizontales Scrollen
-  const PADS = { L: 120, R: 20, T: 40, B: 40 };
+  const PADS = { L: 150, R: 20, T: 40, B: 40 };
 
   // Alle möglichen Spuren (wird später dynamisch gefiltert)
   const ALL_LANES = [
-    { key: 'hhc', color: '#ffd166', label: 'Hi‑Hat geschlossen' },
-    { key: 'hhp', color: '#ffc14d', label: 'Hi‑Hat Pedal' },
-    { key: 'hho', color: '#ffb347', label: 'Hi‑Hat offen' },
-    { key: 'cr1', color: '#f7a8f0', label: 'Crash 1' },
-    { key: 'cr2', color: '#f58ae6', label: 'Crash 2' },
-    { key: 'ride', color: '#9ad1ff', label: 'Ride' },
-    { key: 'ridebell', color: '#8bc7ff', label: 'Ride Bell' },
-    { key: 'china', color: '#f68f6f', label: 'China' },
-    { key: 'splash', color: '#f6cf6f', label: 'Splash' },
-    { key: 'sn', color: '#ef476f', label: 'Snare' },
-    { key: 't1', color: '#d4e157', label: 'Tom High' },
-    { key: 't2', color: '#b0d445', label: 'Tom High‑Mid' },
-    { key: 't3', color: '#8cc64a', label: 'Tom Low‑Mid' },
-    { key: 't4', color: '#5cc06e', label: 'Tom Low' },
-    { key: 't5', color: '#41b58a', label: 'Floor Tom High' },
-    { key: 't6', color: '#2aa57a', label: 'Floor Tom Low' },
-    { key: 'bd', color: '#06d6a0', label: 'Bassdrum' },
+    { key: 'hhc', color: '#ffd166', label: 'Hi‑Hat geschlossen', abbr: 'HC' },
+    { key: 'hhp', color: '#ffc14d', label: 'Hi‑Hat Pedal', abbr: 'HP' },
+    { key: 'hho', color: '#ffb347', label: 'Hi‑Hat offen', abbr: 'HO' },
+    { key: 'cr1', color: '#f7a8f0', label: 'Crash 1', abbr: 'CA' },
+    { key: 'cr2', color: '#f58ae6', label: 'Crash 2', abbr: 'CB' },
+    { key: 'ride', color: '#9ad1ff', label: 'Ride', abbr: 'RD' },
+    { key: 'ridebell', color: '#8bc7ff', label: 'Ride Bell', abbr: 'RB' },
+    { key: 'china', color: '#f68f6f', label: 'China', abbr: 'CH' },
+    { key: 'splash', color: '#f6cf6f', label: 'Splash', abbr: 'SP' },
+    { key: 'sn', color: '#ef476f', label: 'Snare', abbr: 'SN' },
+    { key: 't1', color: '#d4e157', label: 'Tom High', abbr: 'TH' },
+    { key: 't2', color: '#b0d445', label: 'Tom High‑Mid', abbr: 'TM' },
+    { key: 't3', color: '#8cc64a', label: 'Tom Low‑Mid', abbr: 'LM' },
+    { key: 't4', color: '#5cc06e', label: 'Tom Low', abbr: 'TL' },
+    { key: 't5', color: '#41b58a', label: 'Floor Tom High', abbr: 'FH' },
+    { key: 't6', color: '#2aa57a', label: 'Floor Tom Low', abbr: 'FL' },
+    { key: 'bd', color: '#06d6a0', label: 'Bassdrum', abbr: 'BD' },
   ];
 
   let chart = { notes: [], steps: 0 };
+
+  // Map a MIDI number to internal lane key (same mapping as in parseTabs)
+  function midiToLaneKey(n) {
+    if (n == null || Number.isNaN(n)) return null;
+    // Bass Drum
+    if (n === 35 || n === 36) return 'bd';
+    // Snares
+    if (n === 37 || n === 38 || n === 39 || n === 40) return 'sn';
+    // Toms (high → floor)
+    if (n === 50) return 't1';       // High Tom
+    if (n === 48) return 't2';       // High-Mid Tom
+    if (n === 47) return 't3';       // Low-Mid Tom
+    if (n === 45) return 't4';       // Low Tom
+    if (n === 43) return 't5';       // Floor Tom High
+    if (n === 41) return 't6';       // Floor Tom Low
+    // Hi-Hats & Cymbals
+    if (n === 42) return 'hhc';      // Closed Hi-Hat
+    if (n === 44) return 'hhp';      // Pedal Hi-Hat
+    if (n === 46) return 'hho';      // Open Hi-Hat
+    if (n === 49) return 'cr1';      // Crash 1
+    if (n === 57) return 'cr2';      // Crash 2
+    if (n === 51) return 'ride';     // Ride 1
+    if (n === 53) return 'ridebell'; // Ride Bell
+    if (n === 59) return 'ride';     // Ride 2 → ride
+    if (n === 52) return 'china';    // China
+    if (n === 55) return 'splash';   // Splash
+    return null;
+  }
+
+  // Map an internal lane key to a representative MIDI note number for legend display
+  function laneKeyToMidi(key) {
+    switch (key) {
+      case 'bd': return 36;          // Bass Drum
+      case 'sn': return 38;          // Snare
+      case 't1': return 50;          // Tom High
+      case 't2': return 48;          // Tom High-Mid
+      case 't3': return 47;          // Tom Low-Mid
+      case 't4': return 45;          // Tom Low
+      case 't5': return 43;          // Floor Tom High
+      case 't6': return 41;          // Floor Tom Low
+      case 'hhc': return 42;         // Hi-Hat closed
+      case 'hhp': return 44;         // Hi-Hat pedal
+      case 'hho': return 46;         // Hi-Hat open
+      case 'cr1': return 49;         // Crash 1
+      case 'cr2': return 57;         // Crash 2
+      case 'ride': return 51;        // Ride
+      case 'ridebell': return 53;    // Ride Bell
+      case 'china': return 52;       // China
+      case 'splash': return 55;      // Splash
+      default: return null;
+    }
+  }
   let state = 'idle'; // idle | playing | paused | stopped
   let startTime = 0; // performance.now() when playback started
   let pauseAccum = 0; // accumulated paused time
@@ -106,7 +160,7 @@
       cb.type = 'checkbox';
       cb.id = id;
       cb.checked = !!enabled;
-      cb.addEventListener('change', () => { laneSoundEnabled[lane.key] = !!cb.checked; });
+      cb.addEventListener('change', () => { laneSoundEnabled[lane.key] = !!cb.checked; updateLaneLabelStates(); });
       const dot = document.createElement('span');
       dot.className = 'dot';
       dot.style.background = lane.color;
@@ -117,6 +171,92 @@
       wrap.appendChild(txt);
       soundPanelEl.appendChild(wrap);
     }
+  }
+
+  // Render fixed lane labels overlay in stage (non-scrolling)
+  function renderLaneLabels() {
+    if (!laneLabelsEl) return;
+    const lanes = chart.lanes || [];
+    // Compute row layout like in renderFrame
+    const w = canvas.width, h = canvas.height;
+    const padT = PADS.T, padB = PADS.B;
+    const innerH = h - padT - padB;
+    const laneCount = Math.max(1, lanes.length);
+    const rowH = innerH / laneCount;
+
+    laneLabelsEl.innerHTML = '';
+    laneLabelsEl.style.width = PADS.L + 'px';
+    for (let i = 0; i < lanes.length; i++) {
+      const lane = lanes[i];
+      const yTop = padT + i * rowH;
+      const el = document.createElement('div');
+      el.className = 'lane-label' + (laneSoundEnabled[lane.key] === false ? ' off' : '');
+      const labelH = 30;
+      el.style.top = Math.round(yTop + (rowH - labelH) / 2) + 'px';
+      el.style.height = labelH + 'px';
+      el.style.left = '0px';
+
+      // Show full instrument name in playback area next to the mute/unmute switch
+      const laneInfo = getLane(lane.key) || { label: lane.key.toUpperCase() };
+      const nameEl = document.createElement('span');
+      nameEl.className = 'name';
+      nameEl.textContent = laneInfo.label || lane.key.toUpperCase();
+      nameEl.title = nameEl.textContent;
+      el.title = `${laneInfo.label || lane.key.toUpperCase()} – Ton an/aus`;
+
+      // Mini switch
+      const swWrap = document.createElement('label');
+      swWrap.className = 'mini-switch';
+      swWrap.title = 'Ton an/aus';
+      const sw = document.createElement('input');
+      sw.type = 'checkbox';
+      sw.id = `lane-sw-${lane.key}`;
+      // Default on for common lanes if not set yet
+      const defaultOn = (lane.key === 'hhc' || lane.key === 'sn' || lane.key === 'bd');
+      if (!Object.prototype.hasOwnProperty.call(laneSoundEnabled, lane.key)) {
+        laneSoundEnabled[lane.key] = defaultOn;
+      }
+      sw.checked = !!laneSoundEnabled[lane.key];
+      const slider = document.createElement('span');
+      slider.className = 'slider';
+      sw.addEventListener('change', () => {
+        laneSoundEnabled[lane.key] = !!sw.checked;
+        updateLaneLabelStates();
+      });
+      swWrap.appendChild(sw);
+      swWrap.appendChild(slider);
+
+      // Layout: [name] .... [switch]
+      el.appendChild(nameEl);
+      el.appendChild(swWrap);
+
+      // No click/keypress on label itself; only the switch controls sound
+      laneLabelsEl.appendChild(el);
+    }
+    updateLaneLabelsPosition();
+  }
+
+  function updateLaneLabelStates() {
+    if (!laneLabelsEl) return;
+    const lanes = chart.lanes || [];
+    const items = laneLabelsEl.querySelectorAll('.lane-label');
+    for (let i = 0; i < items.length && i < lanes.length; i++) {
+      const lane = lanes[i];
+      const on = !!laneSoundEnabled[lane.key];
+      const it = items[i];
+      it.classList.toggle('off', !on);
+      // sync the switch UI if present
+      const sw = it.querySelector('input[type="checkbox"]');
+      if (sw) sw.checked = on;
+    }
+    // also re-render current frame for visual dimming
+    renderFrame(currentTime());
+  }
+
+  function updateLaneLabelsPosition() {
+    if (!laneLabelsEl || !stageEl) return;
+    const x = stageEl.scrollLeft || 0;
+    laneLabelsEl.style.transform = `translateX(${x}px)`;
   }
 
   function ensureAudioCtx() {
@@ -347,23 +487,34 @@
     // 1) Drum ASCII lines: HH|x-x-|, SN: --o-, BD|o---|
     // 2) Gitarren-Tab-ähnliche Zeilen mit MIDI-Zahlen auf Saiten (E, A, D, G, B, e), z. B. E|-42--|, G|-38-|, A|-36-|
     const lines = text.split(/\r?\n/);
-    const tracks = { hh: [], sn: [], bd: [] };
+    const tracks = Object.create(null); // dynamic map: laneKey -> [segments]
     const guitarSeqs = [];
+    const midiTokens = new Set(); // collect encountered two-digit MIDI numbers (as numbers)
     let detectedFormat = null;
-    const aliases = [
-      { key: 'hh', names: ['hh', 'h', 'ch', 'c', 'hat', 'ride', 'cy', 'cym'] },
-      { key: 'sn', names: ['sn', 's', 'sd', 'snare'] },
-      { key: 'bd', names: ['bd', 'k', 'kick', 'bass'] },
-    ];
     const stringNames = ['e', 'a', 'd', 'g', 'b']; // Gitarren-Saitenlabels
 
-    // Helper to map label text to track key
+    // Helper to map label text (left of : or |) to an internal lane key
     function mapLabel(label) {
-      const norm = label.toLowerCase().replace(/[^a-z]/g, '');
-      for (const a of aliases) {
-        if (a.names.includes(norm)) return a.key;
-      }
-      return null;
+      const norm = label.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const aliasToLane = {
+        // Hi-Hats
+        'hc': 'hhc', 'ho': 'hho', 'hp': 'hhp', 'hh': 'hhc', 'h': 'hhc',
+        // Snare
+        'sn': 'sn', 's': 'sn', 'sd': 'sn', 'snare': 'sn',
+        // Bassdrum
+        'bd': 'bd', 'k': 'bd', 'kick': 'bd', 'bass': 'bd',
+        // Cymbals
+        'rd': 'ride', 'ride': 'ride',
+        'rb': 'ridebell', 'ridebell': 'ridebell',
+        'ca': 'cr1', 'cr1': 'cr1',
+        'cb': 'cr2', 'cr2': 'cr2',
+        'ch': 'china', 'china': 'china',
+        'sp': 'splash', 'splash': 'splash',
+        // Toms (semantic 2-letter and explicit indices)
+        'th': 't1', 'tm': 't2', 'lm': 't3', 'tl': 't4', 'fh': 't5', 'fl': 't6',
+        't1': 't1', 't2': 't2', 't3': 't3', 't4': 't4', 't5': 't5', 't6': 't6',
+      };
+      return aliasToLane[norm] || null;
     }
 
     // Helper to map MIDI note numbers to extended lanes
@@ -425,6 +576,7 @@
           if (ch === '|' || ch === '-' || ch === 'x' || ch === 'X' || ch === 'o' || ch === 'O' || ch === '*') cleaned += ch;
         }
         cleaned = cleaned.replace(/\|/g, ''); // drop bar lines
+        if (!tracks[key]) tracks[key] = [];
         tracks[key].push(cleaned);
         continue;
       }
@@ -444,10 +596,15 @@
     // Helper to build classic notes array
     function buildClassic(mergedObj, len) {
       const arr = [];
+      const keys = Object.keys(mergedObj);
       for (let i = 0; i < len; i++) {
-        if (mergedObj.hh[i] && mergedObj.hh[i] !== '-') arr.push({ lane: 'hhc', step: i });
-        if (mergedObj.sn[i] && mergedObj.sn[i] !== '-') arr.push({ lane: 'sn', step: i });
-        if (mergedObj.bd[i] && mergedObj.bd[i] !== '-') arr.push({ lane: 'bd', step: i });
+        for (const laneKey of keys) {
+          const seq = mergedObj[laneKey] || '';
+          if (seq[i] && seq[i] !== '-') {
+            // laneKey is already the normalized internal key (e.g., 'hhc', 'ride', 't1')
+            arr.push({ lane: laneKey, step: i });
+          }
+        }
       }
       return arr;
     }
@@ -465,7 +622,7 @@
     // Forced guitar: skip classic entirely
     if (formatOpt === 'guitar') {
       let gMax = 0;
-      if (guitarSeqs.length === 0) return { notes: [], steps: 0, detectedFormat: 'guitar' };
+      if (guitarSeqs.length === 0) return { notes: [], steps: 0, detectedFormat: 'guitar', midiTokens: [] };
       for (let i = 0; i < guitarSeqs.length; i++) gMax = Math.max(gMax, guitarSeqs[i].length);
       for (let i = 0; i < guitarSeqs.length; i++) if (guitarSeqs[i].length < gMax) guitarSeqs[i] = guitarSeqs[i].padEnd(gMax, '-');
       const notes = [];
@@ -477,12 +634,17 @@
             if (d2 >= '0' && d2 <= '9') {
               const num = parseInt(seq[i] + d2, 10);
               const lane = mapMidiToLane(num);
-              if (lane) { notes.push({ lane, step: i }); i += 1; continue; }
+              if (lane) {
+                notes.push({ lane, step: i });
+                midiTokens.add(num);
+                i += 1; 
+                continue; 
+              }
             }
           }
         }
       }
-      return { notes, steps: gMax, detectedFormat: 'guitar' };
+      return { notes, steps: gMax, detectedFormat: 'guitar', midiTokens: Array.from(midiTokens).sort((a,b)=>a-b) };
     }
 
     // AUTO mode (default)
@@ -501,7 +663,7 @@
     }
 
     // Otherwise, try to parse guitar-style numeric tabs
-    if (guitarSeqs.length === 0) return { notes: [], steps: 0, detectedFormat: null };
+    if (guitarSeqs.length === 0) return { notes: [], steps: 0, detectedFormat: null, midiTokens: [] };
     for (let i = 0; i < guitarSeqs.length; i++) {
       maxLen = Math.max(maxLen, guitarSeqs[i].length);
     }
@@ -522,6 +684,7 @@
             const lane = mapMidiToLane(num);
             if (lane) {
               notes.push({ lane, step: i });
+              midiTokens.add(num);
               i += 1; // consume the second digit of this token
               continue;
             }
@@ -532,7 +695,7 @@
       }
     }
 
-    return { notes, steps: maxLen, detectedFormat: 'guitar' };
+    return { notes, steps: maxLen, detectedFormat: 'guitar', midiTokens: Array.from(midiTokens).sort((a,b)=>a-b) };
   }
 
   function buildTimedChart(parsed) {
@@ -550,7 +713,8 @@
       .filter(k => present.has(k))
       .map(k => ALL_LANES.find(l => l.key === k))
       .filter(Boolean);
-    return { notes, steps: parsed.steps, stepDur, lanes, detectedFormat: parsed.detectedFormat ?? null };
+    const midiTokens = Array.isArray(parsed.midiTokens) ? parsed.midiTokens.slice() : [];
+    return { notes, steps: parsed.steps, stepDur, lanes, detectedFormat: parsed.detectedFormat ?? null, midiTokens };
   }
 
   function updateFormatBadge(mode, detected) {
@@ -570,6 +734,45 @@
     formatBadgeEl.textContent = text;
   }
 
+  function updateLegend(mode, detected) {
+    if (!legendEl) return;
+    const effective = (mode === 'auto') ? (detected || null) : mode;
+
+    // Guitar format: show all possible instruments with their representative numbers; dim unused
+    if (effective === 'guitar') {
+      const used = new Set((chart.lanes || []).map(l => l.key));
+      const chips = ALL_LANES.map(l => {
+        const on = used.has(l.key);
+        const offCls = on ? '' : ' off';
+        const num = laneKeyToMidi(l.key);
+        const keyTxt = (num != null) ? String(num) : '—';
+        const full = l.label || l.key.toUpperCase();
+        const title = (num != null) ? `${keyTxt} = ${full}` + (on ? ' – verwendet' : ' – nicht verwendet') : `${full}`;
+        return `<span class="chip${offCls}" title="${title}"><span class=\"key\">${keyTxt}</span><span class=\"dot\" style=\"background:${l.color}\"></span><span class=\"nm\">${full}</span></span>`;
+      }).join(' ');
+      legendEl.style.display = 'flex';
+      legendEl.innerHTML = chips;
+      const count = used.size;
+      legendEl.setAttribute('aria-label', `Legende: Zahlen und Instrumente; aktuell verwendet: ${count}`);
+      return;
+    }
+
+    // Classic/default: full instrument legend with abbreviations and names
+    const used = new Set((chart.lanes || []).map(l => l.key));
+    const chips = ALL_LANES.map(l => {
+      const on = used.has(l.key);
+      const offCls = on ? '' : ' off';
+      const abbr = l.abbr || l.key.toUpperCase();
+      const full = l.label || l.key.toUpperCase();
+      const title = `${abbr} = ${full}` + (on ? ' – verwendet' : ' – nicht verwendet');
+      return `<span class="chip${offCls}" title="${title}"><span class="key">${abbr}</span><span class="dot" style="background:${l.color}"></span><span class="nm">${full}</span></span>`;
+    }).join(' ');
+    legendEl.style.display = 'flex';
+    legendEl.innerHTML = chips;
+    const count = used.size;
+    legendEl.setAttribute('aria-label', `Legende: Abkürzungen mit Erklärung; aktuell verwendet: ${count}`);
+  }
+
   function parseAndRender(text) {
     const mode = currentFormatMode || 'auto';
     const parsed = parseTabs(text, { format: mode });
@@ -578,8 +781,10 @@
     state = 'idle';
     if (stageEl) stageEl.scrollLeft = 0;
     updateFormatBadge(mode, parsed.detectedFormat);
+    updateLegend(mode, parsed.detectedFormat);
     rebuildSortedNotes();
     renderSoundPanel();
+    renderLaneLabels();
     // Render metadata based on current text; include file info if available
     try {
       const meta = extractMeta(text || '');
@@ -590,8 +795,9 @@
   }
 
   function updateCanvasSize() {
-    // Canvas-Breite abhängig von der Schrittanzahl, um horizontales Scrollen zu ermöglichen
-    const minInner = 600; // Mindestbreite des Inhaltsbereichs
+    // Canvas-Breite abhängig von der Schrittanzahl, aber mindestens so breit wie der sichtbare Stage‑Bereich
+    const viewW = stageEl?.clientWidth || 900;
+    const minInner = Math.max(0, viewW - PADS.L - PADS.R); // nutze freien Platz vollständig
     const totalSteps = Math.max(0, chart.steps);
     const innerW = Math.max(totalSteps * STEP_PX, minInner);
     // Höhe dynamisch an den sichtbaren Stage-Container anpassen
@@ -621,10 +827,13 @@
     const totalSteps = Math.max(1, chart.steps);
     const totalDur = leadIn + totalSteps * stepDur;
 
-    // Background and row separators
+    // Background and row separators (dim muted lanes)
     for (let i = 0; i < laneCount; i++) {
       const yTop = padT + i * rowH;
-      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      const lane = lanes[i];
+      const on = lane ? !!laneSoundEnabled[lane.key] : true;
+      const bgAlpha = on ? 0.03 : 0.01;
+      ctx.fillStyle = `rgba(255,255,255,${bgAlpha})`;
       ctx.fillRect(padL, yTop, innerW, rowH);
       // Row separator line
       ctx.strokeStyle = 'rgba(255,255,255,0.06)';
@@ -649,24 +858,14 @@
       ctx.stroke();
     }
 
-    // Spur-Beschriftungen (links) oder Hinweis
+    // Hinweis, wenn keine Noten geladen sind (keine Spur-Beschriftungen im Canvas)
     ctx.save();
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '14px system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, \'Noto Sans\', sans-serif';
     if (lanes.length === 0) {
-      // Hinweis in der Mitte anzeigen
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
       ctx.fillStyle = 'rgba(230,233,239,0.7)';
       ctx.fillText('Keine Noten geladen', padL + innerW / 2, padT + innerH / 2);
-    } else {
-      for (let i = 0; i < lanes.length; i++) {
-        const lane = lanes[i];
-        const yMid = padT + i * rowH + rowH / 2;
-        ctx.fillStyle = 'rgba(230,233,239,0.9)';
-        ctx.fillText(lane.label || lane.key.toUpperCase(), padL - 12, yMid);
-      }
     }
     ctx.restore();
 
@@ -718,8 +917,10 @@
 
   function drawNote(x, y, laneKey) {
     const lane = getLane(laneKey) || { color: '#8ab4f8' };
+    const on = !!laneSoundEnabled[laneKey];
     ctx.save();
     ctx.translate(x, y);
+    ctx.globalAlpha = on ? 1 : 0.35;
     ctx.fillStyle = lane.color;
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 2;
@@ -748,7 +949,7 @@
 
   function start() {
     if (!chart.notes.length) {
-      alert('Keine Noten geladen. Bitte Tabs einfügen und „Tabs parsen“ klicken oder „Demo laden“.');
+      alert('Keine Noten geladen. Bitte Tabs einfügen und „Tabs parsen“ klicken oder eine Demo im Dropdown wählen.');
       return;
     }
     state = 'playing';
@@ -823,9 +1024,12 @@
   });
   btnPause.addEventListener('click', () => { if (state === 'playing') pause(); });
   btnStop.addEventListener('click', () => { stop(); renderFrame(0); });
-  btnDemo.addEventListener('click', () => {
+  // Instant demo switching on dropdown change (no button press needed)
+  demoSelect?.addEventListener('change', () => {
     lastLoadedFile = null; // demo content is not a file
-    tabsEl.value = demoTabs();
+    const kind = demoSelect?.value || '';
+    if (!kind) return; // nothing selected
+    tabsEl.value = demoTabs(kind);
     parseAndRender(tabsEl.value);
   });
   // Fullscreen toggle
@@ -862,8 +1066,10 @@
     updateFullscreenBtn();
     // On entering/exiting fullscreen, recalc sizes
     updateCanvasSize();
+    renderLaneLabels();
     renderFrame(0);
     updateHudPosition();
+    updateLaneLabelsPosition();
   });
 
   // Immediate refresh on settings change
@@ -880,13 +1086,25 @@
 
   // Observe stage resizing
   if (window.ResizeObserver && stageEl) {
-    const ro = new ResizeObserver(() => { updateCanvasSize(); renderFrame(0); updateHudPosition(); });
+    const ro = new ResizeObserver(() => { 
+      updateCanvasSize(); 
+      renderLaneLabels();
+      renderFrame(0); 
+      updateHudPosition(); 
+      updateLaneLabelsPosition();
+    });
     ro.observe(stageEl);
   }
-  window.addEventListener('resize', () => { updateCanvasSize(); renderFrame(0); updateHudPosition(); });
-  // Keep HUD pinned on scrolls
-  stageEl?.addEventListener('scroll', () => { updateHudPosition(); });
-  window.addEventListener('scroll', () => { updateHudPosition(); });
+  window.addEventListener('resize', () => { 
+    updateCanvasSize(); 
+    renderLaneLabels();
+    renderFrame(0); 
+    updateHudPosition(); 
+    updateLaneLabelsPosition();
+  });
+  // Keep HUD and lane labels pinned on scrolls
+  stageEl?.addEventListener('scroll', () => { updateHudPosition(); updateLaneLabelsPosition(); });
+  window.addEventListener('scroll', () => { updateHudPosition(); updateLaneLabelsPosition(); });
 
   // File upload handling
   if (fileInput) {
@@ -936,7 +1154,7 @@
         continue;
       }
       // Stop scanning metadata once we hit typical tab content
-      const looksLikeTab = /^(\s*[EADGBe]|HH|SN|BD)\s*[:|]/i.test(line);
+      const looksLikeTab = /^\s*(?:[EADGBe]|HH|HC|HO|HP|SN|BD|RD|RB|CA|CB|CH|SP|T[1-6]|TH|TM|LM|TL|FH|FL)\s*[:|]/i.test(line);
       if (looksLikeTab) break;
     }
     return meta;
@@ -972,16 +1190,41 @@
       .replaceAll("'", '&#39;');
   }
 
-  function demoTabs() {
+  function demoClassic() {
     return [
-      'HH|x-x-|x-x-|x-x-|x-x-|',
+      'Title:',
+      '  Demo – Classic ASCII',
+      '',
+      'HC|x-x-|x-x-|x-x-|x-x-|',
       'SN|----|o---|----|o---|',
       'BD|o---|----|o---|----|',
       '',
-      'HH|x-x-|x-x-|x-x-|x-x-|',
+      'HC|x-x-|x-x-|x-x-|x-x-|',
       'SN|----|--o-|----|--o-|',
       'BD|o---|o---|o---|o---|'
     ].join('\n');
+  }
+
+  function demoGuitar() {
+    // Gitarren-Tab-ähnliche Zeilen mit zweistelligen MIDI-Zahlen
+    // 42=HH closed, 38=Snare, 36=Bassdrum
+    return [
+      'Title:',
+      '  Demo – Gitarren‑Tab (MIDI‑Zahlen)',
+      '',
+      'E|-42--42--42--42-|',
+      'G|----38------38--|',
+      'A|36------36------|',
+      '',
+      'E|-46--46--42--42-|',
+      'G|----38------38--|',
+      'A|36------36------|'
+    ].join('\n');
+  }
+
+  function demoTabs(kind = 'classic') {
+    if (kind === 'guitar') return demoGuitar();
+    return demoClassic();
   }
 
   // Initial paint

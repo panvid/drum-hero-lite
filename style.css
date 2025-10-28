@@ -124,3 +124,273 @@ a { color: #7bb0ff; }
 a:visited { color: #7bb0ff; }
 a:hover { color: #a8c8ff; }
 a:active { color: #d0e2ff; }
+
+
+/* Pretty select styling for demo dropdown */
+.controls .field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,24,51,0.6);
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid #2a2f4a;
+}
+.controls .field .mini { font-size: 12px; color: #c8ccdf; }
+.controls .field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 8px 30px 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #2a2f4a;
+  background-color: #0d1022;
+  color: #e6e9ef;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23c8ccdf' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+}
+.controls .field select:hover { filter: brightness(1.1); }
+.controls .field select:focus { outline: 2px solid #3c68ff; outline-offset: 2px; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  background: #0f1220;
+  color: #e6e9ef;
+}
+header, footer {
+  padding: 12px 16px;
+  background: #0a0c17;
+  border-bottom: 1px solid #22263a;
+}
+footer { border-top: 1px solid #22263a; border-bottom: none; }
+
+h1 { font-size: 20px; margin: 0 0 4px 0; }
+
+.controls {
+  padding: 12px 16px;
+  border-bottom: 1px solid #22263a;
+}
+.controls .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.controls label { display: inline-flex; align-items: center; gap: 8px; }
+.controls input[type="number"] {
+  width: 80px; padding: 4px 6px; border-radius: 6px; border: 1px solid #2a2f4a; background: #0d1022; color: #e6e9ef;
+}
+.controls .checkbox { gap: 6px; }
+.controls button {
+  background: #2b5fd9; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.controls button:hover { filter: brightness(1.1); }
+.controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.workspace {
+  display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; padding: 12px 16px;
+}
+.editor { display: flex; flex-direction: column; gap: 8px; }
+.editor textarea {
+  width: 100%; height: 380px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid #2a2f4a; background: #0d1022; color: #d9dcec; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.editor .help { opacity: 0.9; }
+.editor .help summary { cursor: pointer; }
+
+.stage { position: relative; overflow-x: auto; overflow-y: hidden; height: 60vh; min-height: 260px; resize: vertical; }
+canvas#stage { background: linear-gradient(180deg, #0b0e1c 0%, #0a0c17 100%); border: 1px solid #22263a; border-radius: 10px; display: block; }
+/* Fullscreen adjustments for stage */
+.stage:fullscreen { width: 100vw; height: 100vh; }
+.stage:-webkit-full-screen { width: 100vw; height: 100vh; }
+
+/* Icon-only footer links */
+.icon-link { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: #1b2038; border: 1px solid #2a2f4a; color: #e6e9ef; text-decoration: none; }
+.icon-link:hover { filter: brightness(1.12); }
+.icon-link svg { display: block; }
+.legend { position: absolute; left: 10px; top: 10px; display: flex; gap: 12px; opacity: 0.9; }
+.legend .key { display: inline-block; min-width: 28px; text-align: center; padding: 2px 6px; border-radius: 6px; background: #1b2038; border: 1px solid #2a2f4a; font-weight: 700; }
+.legend .hh { color: #ffd166; }
+.legend .sn { color: #ef476f; }
+.legend .bd { color: #06d6a0; }
+
+.hud {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  background: rgba(10,12,23,0.6);
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid #2a2f4a;
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+}
+.hud .icon-btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid #2a2f4a; background: #141833; color: #e6e9ef; cursor: pointer; }
+.hud .icon-btn:hover { filter: brightness(1.12); }
+.hud .icon-btn:active { transform: scale(0.97); }
+.hud .icon-btn:focus { outline: 2px solid #3c68ff; outline-offset: 2px; }
+
+@media (max-width: 980px) {
+  .workspace { grid-template-columns: 1fr; }
+  .editor textarea { height: 240px; }
+}
+
+/* UI extras for icons, selects, and badges */
+.controls .icon { margin-right: 6px; display: inline-block; }
+.controls select {
+  padding: 6px 8px; border-radius: 6px; border: 1px solid #2a2f4a; background: #0d1022; color: #e6e9ef;
+}
+.controls label.file-label { display: inline-flex; align-items: center; gap: 6px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; border: 1px solid #2a2f4a; font-size: 12px; }
+.badge-muted { background: #1b2038; color: #c8ccdf; }
+.badge.clickable { cursor: pointer; }
+.badge.clickable:hover { background: #242a49; border-color: #3a4170; }
+.file-meta { margin-right: 8px; }
+
+/* HUD field controls and toggle switch */
+.hud .field { display: inline-flex; align-items: center; gap: 6px; background: rgba(20,24,51,0.6); padding: 4px 6px; border-radius: 8px; border: 1px solid #2a2f4a; }
+.hud .field .mini { font-size: 12px; color: #c8ccdf; }
+.hud .field input[type="number"] { width: 68px; padding: 4px 6px; border-radius: 6px; border: 1px solid #2a2f4a; background: #0d1022; color: #e6e9ef; }
+.hud .sep { width: 1px; height: 28px; background: #2a2f4a; align-self: center; opacity: 0.9; }
+
+/* Toggle switch for metronome */
+.switch { display: inline-flex; align-items: center; gap: 6px; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch .slider { position: relative; width: 42px; height: 22px; background: #333a5a; border: 1px solid #2a2f4a; border-radius: 999px; transition: background 0.2s ease; }
+.switch .slider::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #e6e9ef; border-radius: 50%; transition: left 0.2s ease; }
+.switch input:checked + .slider { background: #2b5fd9; }
+.switch input:checked + .slider::after { left: 22px; }
+.switch .mini { font-size: 12px; color: #c8ccdf; }
+
+/* Sound panel for per-lane checkboxes */
+.sound-panel { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.sound-panel .lane { display: inline-flex; align-items: center; gap: 6px; background: rgba(20,24,51,0.6); padding: 4px 8px; border-radius: 8px; border: 1px solid #2a2f4a; cursor: pointer; }
+.sound-panel .lane input { accent-color: #2b5fd9; }
+.sound-panel .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.6); }
+
+/* Accessible link colors */
+ a { color: #7bb0ff; }
+ a:visited { color: #7bb0ff; }
+ a:hover { color: #a8c8ff; }
+ a:active { color: #d0e2ff; }
+
+
+/* Pretty select styling for demo dropdown (legacy wrapped variant) */
+.controls .field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,24,51,0.6);
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid #2a2f4a;
+}
+.controls .field .mini { font-size: 12px; color: #c8ccdf; }
+.controls .field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 8px 30px 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #2a2f4a;
+  background-color: #0d1022;
+  color: #e6e9ef;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23c8ccdf' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+}
+.controls .field select:hover { filter: brightness(1.1); }
+.controls .field select:focus { outline: 2px solid #3c68ff; outline-offset: 2px; }
+
+/* New: style demo dropdown like primary buttons */
+#demoSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #2b5fd9;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 36px 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ffffff' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+}
+#demoSelect:hover { filter: brightness(1.1); }
+#demoSelect:focus { outline: 2px solid #3c68ff; outline-offset: 2px; }
+
+
+/* Layout tweak: make editor narrower and stage wider */
+.workspace { grid-template-columns: 0.9fr 2.1fr; }
+
+/* Legend near editor: use normal flow instead of absolute */
+.editor .legend { position: static; left: auto; top: auto; margin-top: 4px; gap: 12px; }
+
+/* Fixed lane labels overlay inside stage */
+.lane-labels { position: absolute; top: 0; left: 0; height: 100%; z-index: 500; pointer-events: none; width: 120px; }
+.lane-labels .lane-label {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: rgba(20,24,51,0.6);
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid #2a2f4a;
+  color: #e6e9ef;
+  cursor: default;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.lane-labels .lane-label.off { opacity: 0.55; filter: grayscale(0.4); }
+.lane-labels .lane-label .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.6); }
+.lane-labels .lane-label .name { font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Preserve single-column on small screens */
+@media (max-width: 980px) {
+  .workspace { grid-template-columns: 1fr; }
+}
+
+
+/* Legend chips: all instruments; dim unused */
+.editor .legend { flex-wrap: wrap; gap: 8px 10px; }
+.legend .chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(20,24,51,0.6); padding: 4px 8px; border-radius: 8px; border: 1px solid #2a2f4a; color: #e6e9ef; }
+.legend .chip.off { opacity: 0.5; filter: grayscale(0.4); }
+.legend .chip .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.6); }
+.legend .chip .nm { font-size: 12px; }
+
+/* Mini switch for lane labels */
+.mini-switch { display: inline-flex; align-items: center; gap: 6px; }
+.mini-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.mini-switch .slider { position: relative; width: 42px; height: 22px; background: #333a5a; border: 1px solid #2a2f4a; border-radius: 999px; transition: background 0.2s ease; flex: 0 0 auto; }
+.mini-switch .slider::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #e6e9ef; border-radius: 50%; transition: left 0.2s ease; }
+.mini-switch input:checked + .slider { background: #2b5fd9; }
+.mini-switch input:checked + .slider::after { left: 22px; }
+
+
+/* Abbreviation badge in lane labels (matches legend look) */
+.lane-labels .lane-label .key {
+  display: inline-block;
+  min-width: 28px;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #1b2038;
+  border: 1px solid #2a2f4a;
+  font-weight: 700;
+  font-size: 12px;
+}
