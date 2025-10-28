@@ -28,6 +28,7 @@
   const stageEl = document.querySelector('.stage');
   const hudEl = document.querySelector('.hud');
   const fileMetaEl = document.getElementById('fileMeta');
+  const soundPanelEl = document.getElementById('soundPanel');
   let lastLoadedFile = null; // remember last uploaded file for meta display
 
   // Keep HUD pinned to the visible top-right corner of the stage, even when horizontally scrolling
@@ -84,6 +85,39 @@
   // Metronome
   let audioCtx = null;
   let lastBeatIndex = -1;
+  
+  // Per-lane sound enable state (checkbox controlled)
+  const laneSoundEnabled = Object.create(null);
+  
+  // Render the sound panel with checkboxes for current lanes
+  function renderSoundPanel() {
+    if (!soundPanelEl) return;
+    const lanes = chart.lanes || [];
+    soundPanelEl.innerHTML = '';
+    for (const lane of lanes) {
+      const id = `sp-${lane.key}`;
+      const defaultOn = (lane.key === 'hhc' || lane.key === 'sn' || lane.key === 'bd');
+      const enabled = (Object.prototype.hasOwnProperty.call(laneSoundEnabled, lane.key) ? laneSoundEnabled[lane.key] : defaultOn);
+      laneSoundEnabled[lane.key] = enabled; // persist default
+      const wrap = document.createElement('label');
+      wrap.className = 'lane';
+      wrap.title = lane.label || lane.key.toUpperCase();
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = id;
+      cb.checked = !!enabled;
+      cb.addEventListener('change', () => { laneSoundEnabled[lane.key] = !!cb.checked; });
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = lane.color;
+      const txt = document.createElement('span');
+      txt.textContent = (lane.key === 'hhc' ? 'Hat' : (lane.label || lane.key.toUpperCase()));
+      wrap.appendChild(cb);
+      wrap.appendChild(dot);
+      wrap.appendChild(txt);
+      soundPanelEl.appendChild(wrap);
+    }
+  }
 
   function ensureAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -102,6 +136,194 @@
     const t = ctx.currentTime;
     o.start(t);
     o.stop(t + 0.04);
+  }
+
+  // ===== Drum Synth (WebAudio) =====
+  let noiseBuf = null;
+  function getNoiseBuffer() {
+    const ctx = ensureAudioCtx();
+    if (noiseBuf) return noiseBuf;
+    const seconds = 1.0;
+    const rate = ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, seconds * rate, rate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    noiseBuf = buffer;
+    return noiseBuf;
+  }
+
+  function playKick(when) {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, when);
+    o.frequency.exponentialRampToValueAtTime(50, when + 0.12);
+    g.gain.setValueAtTime(0.9, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + 0.2);
+    o.connect(g).connect(ctx.destination);
+    o.start(when);
+    o.stop(when + 0.25);
+  }
+
+  function playSnare(when) {
+    const ctx = ensureAudioCtx();
+    // Noise burst
+    const n = ctx.createBufferSource();
+    n.buffer = getNoiseBuffer();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1200;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.6, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + 0.18);
+    n.connect(hp).connect(g).connect(ctx.destination);
+    n.start(when);
+    n.stop(when + 0.25);
+    // Body tone
+    const o = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(180, when);
+    o.frequency.exponentialRampToValueAtTime(140, when + 0.05);
+    g2.gain.setValueAtTime(0.2, when);
+    g2.gain.exponentialRampToValueAtTime(0.0001, when + 0.1);
+    o.connect(g2).connect(ctx.destination);
+    o.start(when);
+    o.stop(when + 0.15);
+  }
+
+  function playHat(when, type = 'closed') {
+    const ctx = ensureAudioCtx();
+    const n = ctx.createBufferSource();
+    n.buffer = getNoiseBuffer();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 5000;
+    const g = ctx.createGain();
+    const dur = type === 'open' ? 0.5 : (type === 'pedal' ? 0.12 : 0.08);
+    const startGain = type === 'open' ? 0.35 : 0.25;
+    g.gain.setValueAtTime(startGain, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    n.connect(hp).connect(g).connect(ctx.destination);
+    n.start(when);
+    n.stop(when + dur + 0.05);
+  }
+
+  function playCymbal(when, kind = 'crash') {
+    const ctx = ensureAudioCtx();
+    const n = ctx.createBufferSource();
+    n.buffer = getNoiseBuffer();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 3000;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = (kind === 'ride' ? 7000 : 6000);
+    const g = ctx.createGain();
+    const dur = (kind === 'ride' ? 0.8 : 1.2);
+    g.gain.setValueAtTime(0.28, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    n.connect(hp).connect(bp).connect(g).connect(ctx.destination);
+    n.start(when);
+    n.stop(when + dur + 0.1);
+  }
+
+  function playRideBell(when) {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    o.type = 'triangle';
+    const g = ctx.createGain();
+    o.frequency.setValueAtTime(900, when);
+    o.frequency.exponentialRampToValueAtTime(700, when + 0.08);
+    g.gain.setValueAtTime(0.25, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + 0.25);
+    o.connect(g).connect(ctx.destination);
+    o.start(when);
+    o.stop(when + 0.3);
+  }
+
+  function playTom(when, freq = 180) {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, when);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.7, when + 0.12);
+    g.gain.setValueAtTime(0.4, when);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + 0.25);
+    o.connect(g).connect(ctx.destination);
+    o.start(when);
+    o.stop(when + 0.3);
+  }
+
+  function triggerLaneSound(laneKey, when) {
+    switch (laneKey) {
+      case 'bd': return playKick(when);
+      case 'sn': return playSnare(when);
+      case 'hhc': return playHat(when, 'closed');
+      case 'hho': return playHat(when, 'open');
+      case 'hhp': return playHat(when, 'pedal');
+      case 'ride': return playCymbal(when, 'ride');
+      case 'ridebell': return playRideBell(when);
+      case 'cr1':
+      case 'cr2': return playCymbal(when, 'crash');
+      case 'china': return playCymbal(when, 'crash');
+      case 'splash': return playCymbal(when, 'crash');
+      case 't1': return playTom(when, 220);
+      case 't2': return playTom(when, 200);
+      case 't3': return playTom(when, 180);
+      case 't4': return playTom(when, 160);
+      case 't5': return playTom(when, 140);
+      case 't6': return playTom(when, 120);
+      default:
+        // Fallback: short hat-like noise
+        return playHat(when, 'closed');
+    }
+  }
+
+  // ===== Scheduling =====
+  let sortedNotes = [];
+  let nextNoteIdx = 0;
+
+  function noteTimeFromStep(step) {
+    const { bpm, spb, leadIn } = getSettings();
+    const stepDur = (60 / bpm) / spb;
+    return leadIn + step * stepDur;
+  }
+
+  function rebuildSortedNotes() {
+    sortedNotes = (chart.notes || []).slice().sort((a, b) => a.step - b.step);
+    nextNoteIdx = 0;
+  }
+
+  function syncSchedulerToTime(t) {
+    // Move pointer to first note with time >= t
+    nextNoteIdx = 0;
+    for (let i = 0; i < sortedNotes.length; i++) {
+      if (noteTimeFromStep(sortedNotes[i].step) >= t - 0.01) { nextNoteIdx = i; break; }
+      nextNoteIdx = i + 1;
+    }
+  }
+
+  function scheduleDueNotes(t) {
+    const ctx = ensureAudioCtx();
+    const lookahead = 0.2; // seconds
+    while (nextNoteIdx < sortedNotes.length) {
+      const n = sortedNotes[nextNoteIdx];
+      const nt = noteTimeFromStep(n.step);
+      if (nt <= t + lookahead) {
+        if (laneSoundEnabled[n.lane]) {
+          const when = Math.max(0, nt - t);
+          triggerLaneSound(n.lane, ctx.currentTime + when);
+        }
+        nextNoteIdx++;
+      } else {
+        break;
+      }
+    }
   }
 
   function nowSec() { return performance.now() / 1000; }
@@ -356,6 +578,8 @@
     state = 'idle';
     if (stageEl) stageEl.scrollLeft = 0;
     updateFormatBadge(mode, parsed.detectedFormat);
+    rebuildSortedNotes();
+    renderSoundPanel();
     // Render metadata based on current text; include file info if available
     try {
       const meta = extractMeta(text || '');
@@ -532,6 +756,8 @@
     pauseAccum = 0;
     pauseStart = 0;
     lastBeatIndex = -1;
+    rebuildSortedNotes();
+    syncSchedulerToTime(0);
     ensureAudioCtx();
     loop();
   }
@@ -577,6 +803,8 @@
       }
     }
 
+    // Schedule instrument notes for the next short interval
+    scheduleDueNotes(t);
 
     renderFrame(t);
     requestAnimationFrame(loop);

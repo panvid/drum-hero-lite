@@ -113,6 +113,12 @@ canvas#stage { background: linear-gradient(180deg, #0b0e1c 0%, #0a0c17 100%); bo
 .switch input:checked + .slider::after { left: 22px; }
 .switch .mini { font-size: 12px; color: #c8ccdf; }
 
+/* Sound panel for per-lane checkboxes */
+.sound-panel { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.sound-panel .lane { display: inline-flex; align-items: center; gap: 6px; background: rgba(20,24,51,0.6); padding: 4px 8px; border-radius: 8px; border: 1px solid #2a2f4a; cursor: pointer; }
+.sound-panel .lane input { accent-color: #2b5fd9; }
+.sound-panel .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.6); }
+
 /* Accessible link colors */
 a { color: #7bb0ff; }
 a:visited { color: #7bb0ff; }
