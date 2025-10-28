@@ -940,6 +940,12 @@
 
   function parseAndRender(text) {
     const mode = currentFormatMode || 'auto';
+    // Apply header defaults before parsing to influence grid/tempo UI
+    try {
+      const meta = extractMeta(text || '');
+      applyHeaderSettings(meta);
+      renderMeta(meta, lastLoadedFile || undefined);
+    } catch (_) { /* noop */ }
     const parsed = parseTabs(text, { format: mode });
     chart = buildTimedChart(parsed);
     updateCanvasSize();
@@ -950,11 +956,6 @@
     rebuildSortedNotes();
     renderSoundPanel();
     renderLaneLabels();
-    // Render metadata based on current text; include file info if available
-    try {
-      const meta = extractMeta(text || '');
-      renderMeta(meta, lastLoadedFile || undefined);
-    } catch (_) { /* noop */ }
     renderFrame(0);
     updateHudPosition();
   }
@@ -1337,6 +1338,7 @@
         tabsEl.value = text;
         lastLoadedFile = file; // remember file for subsequent parses
         const meta = extractMeta(text);
+        applyHeaderSettings(meta);
         renderMeta(meta, file);
         parseAndRender(text);
       } catch (err) {
@@ -1351,6 +1353,7 @@
     const meta = { fields: {}, tracks: [] };
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      // Block-style fields: Key: (on its own line) followed by non-empty lines
       const m = line.match(/^\s*(Title|Artist|Album|Author)\s*:\s*$/i);
       if (m) {
         const key = m[1].toLowerCase();
@@ -1362,6 +1365,34 @@
         }
         if (vals.length) meta.fields[key] = vals.join(' ');
         i = j - 1;
+        continue;
+      }
+      // Inline simple fields: Key: value (same line)
+      const kv = line.match(/^\s*(Title|Artist|Album|Author|Tempo|Time|StepsPerBeat)\s*:\s*(.+)\s*$/i);
+      if (kv) {
+        const key = kv[1].toLowerCase();
+        const val = kv[2].trim();
+        if (key === 'tempo') {
+          const n = parseFloat(val.replace(/bpm/i, '').trim());
+          if (isFinite(n) && n > 0) meta.fields.tempo = n;
+        } else if (key === 'time') {
+          const mSig = val.match(/(\d+)\s*\/\s*(\d+)/);
+          if (mSig) {
+            meta.fields.time = `${mSig[1]}/${mSig[2]}`;
+            meta.fields.timeNum = parseInt(mSig[1], 10);
+            meta.fields.timeDen = parseInt(mSig[2], 10);
+          }
+        } else if (key === 'stepsperbeat') {
+          // Accept a list like 3/4/6/8 or a single number
+          const nums = val.split(/[\/|,\s]+/).map(s => parseInt(s, 10)).filter(n => Number.isFinite(n) && n > 0);
+          if (nums.length) {
+            meta.fields.stepsPerBeatList = nums;
+            meta.fields.stepsPerBeat = nums[0];
+          }
+        } else {
+          // Title/Artist/Album/Author inline variant
+          meta.fields[key] = val;
+        }
         continue;
       }
       const m2 = line.match(/^\s*Track\s*(\d+)\s*:\s*$/i);
@@ -1381,25 +1412,48 @@
     return meta;
   }
 
+  function applyHeaderSettings(meta) {
+    if (!meta || !meta.fields) return;
+    const f = meta.fields;
+    function setNum(el, val, lo, hi) {
+      if (!el) return;
+      const n = parseFloat(val);
+      if (!isFinite(n)) return;
+      const clamped = Math.max(lo, Math.min(hi, n));
+      el.value = String(clamped);
+    }
+    if (typeof f.tempo === 'number') setNum(bpmEl, f.tempo, 20, 300);
+    if (typeof f.stepsPerBeat === 'number') setNum(spbEl, f.stepsPerBeat, 1, 12);
+    if (typeof f.timeNum === 'number') setNum(tsNumEl, f.timeNum, 1, 32);
+    if (typeof f.timeDen === 'number') setNum(tsDenEl, f.timeDen, 1, 32);
+  }
+
   function renderMeta(meta, file) {
     if (!fileMetaEl) return;
     const parts = [];
     const f = (meta && meta.fields) || {};
     const t = (meta && meta.tracks) || [];
     if (file && file.name) {
-      parts.push(`<strong>Datei:</strong> ${escapeHtml(file.name)} (${((file.size || 0) / 1024).toFixed(1)} KB)`);
+      parts.push(`<span class="badge badge-muted" title="Dateiname und Größe"><strong>📄</strong>&nbsp;${escapeHtml(file.name)}&nbsp;(${((file.size || 0) / 1024).toFixed(1)}&nbsp;KB)</span>`);
     }
-    if (f.title) parts.push(`<strong>Titel:</strong> ${escapeHtml(f.title)}`);
-    if (f.artist) parts.push(`<strong>Künstler:</strong> ${escapeHtml(f.artist)}`);
-    if (f.album) parts.push(`<strong>Album:</strong> ${escapeHtml(f.album)}`);
-    if (f.author) parts.push(`<strong>Autor:</strong> ${escapeHtml(f.author)}`);
+    if (f.title) parts.push(`<span class="badge" title="Titel"><strong>🎵</strong>&nbsp;${escapeHtml(f.title)}</span>`);
+    if (f.artist) parts.push(`<span class="badge" title="Künstler"><strong>👤</strong>&nbsp;${escapeHtml(f.artist)}</span>`);
+    if (f.album) parts.push(`<span class="badge" title="Album"><strong>💿</strong>&nbsp;${escapeHtml(f.album)}</span>`);
+    if (f.author) parts.push(`<span class="badge" title="Autor"><strong>✍️</strong>&nbsp;${escapeHtml(f.author)}</span>`);
+    if (typeof f.tempo === 'number') parts.push(`<span class="badge" title="Tempo (BPM)"><strong>⏱️</strong>&nbsp;${Math.round(f.tempo)}&nbsp;BPM</span>`);
+    if (f.time) parts.push(`<span class="badge" title="Taktart"><strong>🕒</strong>&nbsp;${escapeHtml(f.time)}</span>`);
+    if (Array.isArray(f.stepsPerBeatList) && f.stepsPerBeatList.length) {
+      const list = f.stepsPerBeatList.join('/');
+      parts.push(`<span class="badge" title="Schritte pro Schlag"><strong>🧭</strong>&nbsp;SPB:&nbsp;${escapeHtml(list)}</span>`);
+    }
     if (t.length) {
       const trackLines = t
         .sort((a, b) => (a.index || 0) - (b.index || 0))
-        .map(tr => `Track ${tr.index}: ${escapeHtml(tr.desc || '')}`);
-      parts.push(trackLines.join('<br/>'));
+        .map(tr => `<span class=\"badge badge-muted\"><strong>🎚️ Track ${tr.index}</strong>&nbsp;${escapeHtml(tr.desc || '')}</span>`)
+        .join('');
+      parts.push(trackLines);
     }
-    fileMetaEl.innerHTML = parts.join('<br/>');
+    fileMetaEl.innerHTML = parts.join('');
   }
 
   function escapeHtml(s) {

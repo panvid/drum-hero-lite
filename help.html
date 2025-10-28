@@ -116,24 +116,31 @@ A|-36---------|
       <li>Bei MIDI‑Dateien ist kein Override nötig; diese werden als MIDI erkannt und direkt geparst.</li>
     </ul>
 
-    <h2 id="header">Datei‑Header (Titel/Artist/…)</h2>
-    <p>Textdateien können optionale Header am Anfang enthalten. Diese werden oben in der App angezeigt, aber beim Parsen der Noten ignoriert.</p>
+    <h2 id="header">Datei‑Header (Titel/Artist/… + Tempo/Takt)</h2>
+    <p>Textdateien können optionale Header am Anfang enthalten. Sie werden oben als Badges angezeigt und können zusätzlich Tempo/Takt für die UI voreinstellen.</p>
+    <ul>
+      <li>Unterstützte Felder: <code>Title</code>, <code>Artist</code>, <code>Album</code>, <code>Author</code>, <code>Track N</code>.</li>
+      <li>Neu: <code>Tempo</code> (BPM), <code>Time</code> (z. B. 4/4, 3/4, 6/8), <code>StepsPerBeat</code> (z. B. 4 oder Liste <code>3/4/6/8</code>).</li>
+      <li>Voreinstellungen wirken nur als Startwerte. Du kannst BPM/Takt/SPB danach jederzeit ändern.</li>
+    </ul>
     <p>Beispiel‑Header:</p>
     <pre><code>Title:
   Stairway to Heaven
 Artist:
   Led Zeppelin
-Album:
-
-Author:
+Tempo: 140
+Time: 3/4
+StepsPerBeat: 3/4/6/8
 
 Track 1:
   John Bonham | Ludwig Classic Maple Green Sparkle | Drums
 </code></pre>
 
-    <h2 id="steuerung">Steuerung: Tempo, Einzähler, Metronom, Vollbild</h2>
+    <h2 id="steuerung">Steuerung: Tempo, Takt, Schritte/Schlag, Einzähler, Metronom, Vollbild</h2>
     <ul>
       <li><strong>BPM</strong>: Tempo der Wiedergabe.</li>
+      <li><strong>Takt</strong>: Zähler/Nenner der Taktart (z. B. 4/4, 3/4, 6/8) – beeinflusst Akzente und Taktlinien.</li>
+      <li><strong>SPB</strong> (Steps per Beat): Schritte pro Schlag (z. B. 4 = 16tel, 3 = Triolen) – beeinflusst Raster und Quantisierung.</li>
       <li><strong>Einz</strong>: Länge des Einzählers in Sekunden.</li>
       <li><strong>Met</strong>: Schalter für Metronom an/aus.</li>
       <li><strong>⛶ Vollbild</strong>: Bühne in den Vollbild‑Modus schalten.</li>
@@ -153,8 +160,8 @@ Track 1:
     <ul>
       <li><strong>Nichts wird erkannt?</strong> Prüfe, ob Zeilenlabels stimmen (z. B. <code>HH</code>/<code>SN</code>/<code>BD</code> oder <code>E/A/D/G/B/e</code>). Entferne führende Leerzeichen.</li>
       <li><strong>Zahlen im Gitarren‑Tab werden falsch gruppiert?</strong> Nur zweistellige MIDI‑Zahlen werden gelesen. Schreibe sie ohne Trennzeichen direkt hintereinander oder trenne sie mit <code>-</code>.</li>
-      <li><strong>Timing versetzt?</strong> Das Raster ist derzeit fest auf 4/4 mit 4 Schritten pro Schlag (16tel). Passe deine Tab‑Breite entsprechend an.</li>
-      <li><strong>MIDI klingt zu schnell/langsam?</strong> Stelle das gewünschte Tempo mit BPM in der App ein (Tempo‑Events aus MIDI werden nicht übernommen).</li>
+      <li><strong>Timing versetzt?</strong> Stelle Taktart (z. B. 3/4, 6/8) und Schritte pro Schlag (SPB, z. B. 4 = 16tel, 3 = Triolen) ein. Du kannst beides auch per Header (<code>Time</code>, <code>StepsPerBeat</code>) voreinstellen.</li>
+      <li><strong>MIDI klingt zu schnell/langsam?</strong> Stelle das gewünschte Tempo mit BPM ein oder nutze den Header <code>Tempo: 140</code> (Tempo‑Events aus MIDI werden derzeit nicht übernommen).</li>
       <li><strong>Gemischte Inhalte im Text?</strong> Drum‑ASCII hat Vorrang vor Gitarren‑Saiten. Nutze ggf. die Format‑Badge zum Übersteuern.</li>
     </ul>
 

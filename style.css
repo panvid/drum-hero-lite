@@ -394,3 +394,9 @@ canvas#stage { background: linear-gradient(180deg, #0b0e1c 0%, #0a0c17 100%); bo
   font-weight: 700;
   font-size: 12px;
 }
+
+
+/* Enhanced file meta badges layout */
+.file-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.file-meta .badge { background: #1b2038; color: #c8ccdf; border-color: #2a2f4a; }
+.file-meta .badge strong { font-weight: 700; }

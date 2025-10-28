@@ -52,6 +52,16 @@
           <span class="mini">BPM</span>
           <input id="bpm" type="number" min="20" max="300" value="120" />
         </label>
+        <label class="field" title="Schritte pro Schlag (z. B. 4 = 16tel, 3 = Triolen)">
+          <span class="mini">SPB</span>
+          <input id="spb" type="number" min="1" max="12" value="4" />
+        </label>
+        <label class="field" title="Taktart (Zähler/Nenner)">
+          <span class="mini">Takt</span>
+          <input id="tsNum" type="number" min="1" max="32" value="4" style="width:48px" />
+          <span aria-hidden="true">/</span>
+          <input id="tsDen" type="number" min="1" max="32" value="4" style="width:48px" />
+        </label>
         <label class="field" title="Einzähler in Sekunden">
           <span class="mini">Einz</span>
           <input id="leadIn" type="number" min="0" step="0.5" value="2" />
