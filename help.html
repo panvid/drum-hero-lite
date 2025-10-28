@@ -21,7 +21,7 @@
     <a class="back" href="index.html">← Zurück zur App</a>
     <h1>Hilfe & Format‑Hinweise</h1>
 
-    <p>Drum Hero Lite unterstützt zwei Import‑Formate: klassisches Drum‑ASCII mit Zeilen für HH/SN/BD und Gitarren‑Tab‑ähnliche Zeilen mit zweistelligen MIDI‑Zahlen auf den Saitenlabels <code>E/A/D/G/B/e</code>. Diese Seite erklärt die Formate und zeigt, wie du aus Songsterr in ein passendes ASCII‑Tab exportierst.</p>
+    <p>Drum Hero Lite unterstützt drei Import‑Wege: (1) klassisches Drum‑ASCII mit Zeilen für HH/SN/BD, (2) Gitarren‑Tab‑ähnliche Zeilen mit zweistelligen MIDI‑Zahlen auf den Saitenlabels <code>E/A/D/G/B/e</code> und (3) Standard‑MIDI‑Dateien (<code>.mid/.midi</code>). Diese Seite erklärt die Formate und zeigt, wie du aus Songsterr in ein passendes ASCII‑Tab exportierst.</p>
 
     <h2>Empfohlener Workflow (Songsterr → ASCII Tab)</h2>
     <ol>
@@ -48,6 +48,14 @@
       <li>Im Verlauf stehen zweistellige <strong>MIDI‑Noten</strong> (z. B. 42, 38, 36). Direkt aufeinanderfolgende Ziffern werden paarweise als zweistellige Tokens gelesen: <code>3838</code> → <code>38, 38</code>.</li>
       <li>Die Ereignisse werden am Index der ersten Ziffer verortet, die Ausrichtung im Raster bleibt erhalten.</li>
       <li><code>|</code> werden ignoriert, <code>-</code> sind Leer‑Schritte.</li>
+    </ul>
+
+    <h3>3) Standard‑MIDI‑Datei (.mid/.midi)</h3>
+    <ul>
+      <li>Erkennung über Dateiendung <code>.mid/.midi</code> oder Magic‑Header <code>MThd</code> im Datei‑Header.</li>
+      <li>Geparst direkt im Browser (ohne Server). Es werden Note‑On‑Ereignisse auf <strong>Kanal 10</strong> (GM‑Percussion) ausgelesen.</li>
+      <li>Die Drum‑Noten werden auf die vorhandenen Spuren gemappt (siehe Mapping unten) und auf das eingestellte Raster (z. B. 16tel, <em>spb</em>) quantisiert.</li>
+      <li>Tempo‑Events werden aktuell nicht ausgewertet; die Darstellung richtet sich nach dem gewählten Raster in der App.</li>
     </ul>
 
     <h3>MIDI → Spur‑Mapping (erweiterte Spuren)</h3>

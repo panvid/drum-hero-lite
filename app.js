@@ -16,7 +16,7 @@
   const legendEl = document.getElementById('legend');
   const laneLabelsEl = document.getElementById('laneLabels');
   // Formatsteuerung: immer Auto, optional Override durch Klick auf Badge
-  let currentFormatMode = 'auto'; // 'auto' | 'classic' | 'guitar'
+  let currentFormatMode = 'auto'; // 'auto' | 'classic' | 'guitar' | 'midi'
 
   const btnParse = $('#btnParse');
   const btnStart = $('#btnStart');
@@ -294,22 +294,24 @@
     return noiseBuf;
   }
 
-  function playKick(when) {
+  function playKick(when, vel = 1) {
     const ctx = ensureAudioCtx();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = 'sine';
     o.frequency.setValueAtTime(150, when);
     o.frequency.exponentialRampToValueAtTime(50, when + 0.12);
-    g.gain.setValueAtTime(0.9, when);
+    const v = Math.max(0, Math.min(1.5, vel || 0));
+    g.gain.setValueAtTime(0.9 * (v || 1), when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.2);
     o.connect(g).connect(ctx.destination);
     o.start(when);
     o.stop(when + 0.25);
   }
 
-  function playSnare(when) {
+  function playSnare(when, vel = 1) {
     const ctx = ensureAudioCtx();
+    const v = Math.max(0, Math.min(1.5, vel || 0));
     // Noise burst
     const n = ctx.createBufferSource();
     n.buffer = getNoiseBuffer();
@@ -317,7 +319,7 @@
     hp.type = 'highpass';
     hp.frequency.value = 1200;
     const g = ctx.createGain();
-    g.gain.setValueAtTime(0.6, when);
+    g.gain.setValueAtTime(0.6 * (v || 1), when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.18);
     n.connect(hp).connect(g).connect(ctx.destination);
     n.start(when);
@@ -328,14 +330,14 @@
     o.type = 'sine';
     o.frequency.setValueAtTime(180, when);
     o.frequency.exponentialRampToValueAtTime(140, when + 0.05);
-    g2.gain.setValueAtTime(0.2, when);
+    g2.gain.setValueAtTime(0.2 * (v || 1), when);
     g2.gain.exponentialRampToValueAtTime(0.0001, when + 0.1);
     o.connect(g2).connect(ctx.destination);
     o.start(when);
     o.stop(when + 0.15);
   }
 
-  function playHat(when, type = 'closed') {
+  function playHat(when, type = 'closed', vel = 1) {
     const ctx = ensureAudioCtx();
     const n = ctx.createBufferSource();
     n.buffer = getNoiseBuffer();
@@ -344,7 +346,7 @@
     hp.frequency.value = 5000;
     const g = ctx.createGain();
     const dur = type === 'open' ? 0.5 : (type === 'pedal' ? 0.12 : 0.08);
-    const startGain = type === 'open' ? 0.35 : 0.25;
+    const startGain = (type === 'open' ? 0.35 : 0.25) * (Math.max(0, Math.min(1.5, vel || 0)) || 1);
     g.gain.setValueAtTime(startGain, when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
     n.connect(hp).connect(g).connect(ctx.destination);
@@ -352,7 +354,7 @@
     n.stop(when + dur + 0.05);
   }
 
-  function playCymbal(when, kind = 'crash') {
+  function playCymbal(when, kind = 'crash', vel = 1) {
     const ctx = ensureAudioCtx();
     const n = ctx.createBufferSource();
     n.buffer = getNoiseBuffer();
@@ -364,63 +366,66 @@
     bp.frequency.value = (kind === 'ride' ? 7000 : 6000);
     const g = ctx.createGain();
     const dur = (kind === 'ride' ? 0.8 : 1.2);
-    g.gain.setValueAtTime(0.28, when);
+    const v = Math.max(0, Math.min(1.5, vel || 0));
+    g.gain.setValueAtTime(0.28 * (v || 1), when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
     n.connect(hp).connect(bp).connect(g).connect(ctx.destination);
     n.start(when);
     n.stop(when + dur + 0.1);
   }
 
-  function playRideBell(when) {
+  function playRideBell(when, vel = 1) {
     const ctx = ensureAudioCtx();
     const o = ctx.createOscillator();
     o.type = 'triangle';
     const g = ctx.createGain();
     o.frequency.setValueAtTime(900, when);
     o.frequency.exponentialRampToValueAtTime(700, when + 0.08);
-    g.gain.setValueAtTime(0.25, when);
+    const v = Math.max(0, Math.min(1.5, vel || 0));
+    g.gain.setValueAtTime(0.25 * (v || 1), when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.25);
     o.connect(g).connect(ctx.destination);
     o.start(when);
     o.stop(when + 0.3);
   }
 
-  function playTom(when, freq = 180) {
+  function playTom(when, freq = 180, vel = 1) {
     const ctx = ensureAudioCtx();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = 'sine';
     o.frequency.setValueAtTime(freq, when);
     o.frequency.exponentialRampToValueAtTime(freq * 0.7, when + 0.12);
-    g.gain.setValueAtTime(0.4, when);
+    const v = Math.max(0, Math.min(1.5, vel || 0));
+    g.gain.setValueAtTime(0.4 * (v || 1), when);
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.25);
     o.connect(g).connect(ctx.destination);
     o.start(when);
     o.stop(when + 0.3);
   }
 
-  function triggerLaneSound(laneKey, when) {
+  function triggerLaneSound(laneKey, when, vel = 1) {
     switch (laneKey) {
-      case 'bd': return playKick(when);
-      case 'sn': return playSnare(when);
-      case 'hhc': return playHat(when, 'closed');
-      case 'hho': return playHat(when, 'open');
-      case 'hhp': return playHat(when, 'pedal');
-      case 'ride': return playCymbal(when, 'ride');
-      case 'ridebell': return playRideBell(when);
+      case 'bd': return playKick(when, vel);
+      case 'sn': return playSnare(when, vel);
+      case 'hhc': return playHat(when, 'closed', vel);
+      case 'hho': return playHat(when, 'open', vel);
+      case 'hhp': return playHat(when, 'pedal', vel);
+      case 'ride': return playCymbal(when, 'ride', vel);
+      case 'ridebell': return playRideBell(when, vel);
       case 'cr1':
-      case 'cr2': return playCymbal(when, 'crash');
-      case 'china': return playCymbal(when, 'crash');
-      case 'splash': return playCymbal(when, 'crash');
-      case 't1': return playTom(when, 220);
-      case 't2': return playTom(when, 200);
-      case 't3': return playTom(when, 180);
-      case 't4': return playTom(when, 160);
-      case 't5': return playTom(when, 140);
-      case 't6': return playTom(when, 120);
+      case 'cr2': return playCymbal(when, 'crash', vel);
+      case 'china': return playCymbal(when, 'crash', vel);
+      case 'splash': return playCymbal(when, 'crash', vel);
+      case 't1': return playTom(when, 220, vel);
+      case 't2': return playTom(when, 200, vel);
+      case 't3': return playTom(when, 180, vel);
+      case 't4': return playTom(when, 160, vel);
+      case 't5': return playTom(when, 140, vel);
+      case 't6': return playTom(when, 120, vel);
       default:
         // Fallback: short hat-like noise
-        return playHat(when, 'closed');
+        return playHat(when, 'closed', vel);
     }
   }
 
@@ -457,7 +462,8 @@
       if (nt <= t + lookahead) {
         if (laneSoundEnabled[n.lane]) {
           const when = Math.max(0, nt - t);
-          triggerLaneSound(n.lane, ctx.currentTime + when);
+          const v = (typeof n.vel === 'number') ? n.vel : 0.8;
+          triggerLaneSound(n.lane, ctx.currentTime + when, v);
         }
         nextNoteIdx++;
       } else {
@@ -480,7 +486,7 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-  // Parsing
+  // Parsing & MIDI support
   function parseTabs(text, opts = {}) {
     const formatOpt = (opts.format || 'auto').toLowerCase(); // 'auto' | 'classic' | 'guitar'
     // Supports two formats:
@@ -572,10 +578,30 @@
       const key = mapLabel(label);
       if (key) {
         let cleaned = '';
-        for (const ch of seqRaw) {
-          if (ch === '|' || ch === '-' || ch === 'x' || ch === 'X' || ch === 'o' || ch === 'O' || ch === '*') cleaned += ch;
+        // Build a cleaned, step-accurate sequence:
+        // - Remove bars '|'
+        // - Collapse ghost notes like '(x)' or '(o)' into a single 'g' token
+        // - Keep '-', 'o'/'O', 'x', 'X', '*', '!' as step tokens
+        for (let i = 0; i < seqRaw.length; ) {
+          const ch = seqRaw[i];
+          if (ch === '|' || ch === ' ') { i++; continue; }
+          if (ch === '(' && i + 2 < seqRaw.length && seqRaw[i + 2] === ')') {
+            const mid = seqRaw[i + 1];
+            if (mid === 'x' || mid === 'X' || mid === 'o' || mid === 'O' || mid === '*') {
+              // Encode ghost as 'g' followed by two empty steps to preserve alignment
+              cleaned += 'g--'; // ghost token spans 3 columns in source
+              i += 3;
+              continue;
+            }
+            // unrecognized wrapper, skip just '('
+            i++;
+            continue;
+          }
+          if (ch === '-' || ch === 'x' || ch === 'X' || ch === 'o' || ch === 'O' || ch === '*' || ch === '!') {
+            cleaned += ch;
+          }
+          i++;
         }
-        cleaned = cleaned.replace(/\|/g, ''); // drop bar lines
         if (!tracks[key]) tracks[key] = [];
         tracks[key].push(cleaned);
         continue;
@@ -597,12 +623,23 @@
     function buildClassic(mergedObj, len) {
       const arr = [];
       const keys = Object.keys(mergedObj);
+      function tokenToDyn(tok) {
+        switch (tok) {
+          case 'g': return { vel: 0.3, ghost: true }; // ghost
+          case 'o': case 'O': return { vel: 0.5, ghost: false };
+          case 'x': return { vel: 0.8, ghost: false };
+          case 'X': case '*': return { vel: 1.0, ghost: false };
+          case '!': return { vel: 1.2, ghost: false };
+          default: return null;
+        }
+      }
       for (let i = 0; i < len; i++) {
         for (const laneKey of keys) {
           const seq = mergedObj[laneKey] || '';
-          if (seq[i] && seq[i] !== '-') {
-            // laneKey is already the normalized internal key (e.g., 'hhc', 'ride', 't1')
-            arr.push({ lane: laneKey, step: i });
+          const tok = seq[i];
+          if (tok && tok !== '-') {
+            const dyn = tokenToDyn(tok) || { vel: 0.8, ghost: false };
+            arr.push({ lane: laneKey, step: i, vel: dyn.vel, ghost: !!dyn.ghost });
           }
         }
       }
@@ -704,6 +741,8 @@
     const notes = parsed.notes.map(n => ({
       lane: n.lane,
       step: n.step,
+      vel: (typeof n.vel === 'number') ? n.vel : 0.8,
+      ghost: !!n.ghost,
       time: leadIn + n.step * stepDur,
     }));
     // Erzeuge dynamische Spur-Liste nur mit verwendeten Spuren
@@ -720,7 +759,7 @@
   function updateFormatBadge(mode, detected) {
     if (!formatBadgeEl) return;
     let text = 'Format: ';
-    const map = { classic: 'Drum‑ASCII', guitar: 'Gitarren‑Tab' };
+    const map = { classic: 'Drum‑ASCII', guitar: 'Gitarren‑Tab', midi: 'MIDI' };
     if (mode === 'auto') {
       if (detected && map[detected]) {
         text += map[detected];
@@ -739,7 +778,7 @@
     const effective = (mode === 'auto') ? (detected || null) : mode;
 
     // Guitar format: show all possible instruments with their representative numbers; dim unused
-    if (effective === 'guitar') {
+    if (effective === 'guitar' || effective === 'midi') {
       const used = new Set((chart.lanes || []).map(l => l.key));
       const chips = ALL_LANES.map(l => {
         const on = used.has(l.key);
@@ -771,6 +810,132 @@
     legendEl.innerHTML = chips;
     const count = used.size;
     legendEl.setAttribute('aria-label', `Legende: Abkürzungen mit Erklärung; aktuell verwendet: ${count}`);
+  }
+
+  async function fileIsMidi(file) {
+    try {
+      const name = (file && file.name || '').toLowerCase();
+      const type = (file && file.type || '').toLowerCase();
+      if (name.endsWith('.mid') || name.endsWith('.midi')) return true;
+      if (type.includes('midi')) return true;
+      // Peek header
+      const headBuf = await file.slice(0, 4).arrayBuffer();
+      const u8 = new Uint8Array(headBuf);
+      if (u8.length >= 4 && u8[0] === 0x4d && u8[1] === 0x54 && u8[2] === 0x68 && u8[3] === 0x64) return true; // 'MThd'
+    } catch(_) {}
+    return false;
+  }
+
+  function readVarLen(u8, idx) {
+    let val = 0;
+    let i = idx;
+    while (i < u8.length) {
+      const b = u8[i++];
+      val = (val << 7) | (b & 0x7f);
+      if ((b & 0x80) === 0) break;
+    }
+    return { value: val, next: i };
+  }
+
+  function parseMidiArrayBuffer(arrayBuffer) {
+    const u8 = new Uint8Array(arrayBuffer);
+    let i = 0;
+    function readStr(n) { const s = String.fromCharCode.apply(null, u8.slice(i, i + n)); i += n; return s; }
+    function readU32() { const v = (u8[i]<<24)|(u8[i+1]<<16)|(u8[i+2]<<8)|u8[i+3]; i += 4; return (v>>>0); }
+    function readU16() { const v = (u8[i]<<8)|u8[i+1]; i += 2; return v; }
+
+    if (readStr(4) !== 'MThd') throw new Error('Kein MIDI‑Header (MThd) gefunden');
+    const hdrLen = readU32();
+    const fmt = readU16();
+    const ntrks = readU16();
+    let division = readU16();
+    if (hdrLen > 6) i += (hdrLen - 6); // skip rest
+
+    // Determine ticks per quarter
+    let tpq;
+    if ((division & 0x8000) === 0) {
+      tpq = division & 0x7fff;
+    } else {
+      // SMPTE timecode; fallback to a common PPQ
+      tpq = 480;
+    }
+
+    // Collect note events from channel 10 (index 9)
+    const events = [];
+    for (let t = 0; t < ntrks; t++) {
+      const chunkId = readStr(4);
+      const len = readU32();
+      if (chunkId !== 'MTrk') { i += len; continue; }
+      const end = i + len;
+      let tick = 0;
+      let running = 0;
+      while (i < end) {
+        const dl = readVarLen(u8, i); i = dl.next; tick += dl.value;
+        let status = u8[i++];
+        if (status < 0x80) { // running status
+          i--; // step back one; data byte belongs to event
+          status = running;
+        } else {
+          running = status;
+        }
+        if ((status & 0xf0) === 0x90 || (status & 0xf0) === 0x80) {
+          const ch = status & 0x0f;
+          const note = u8[i++];
+          const vel = u8[i++];
+          const isOn = ((status & 0xf0) === 0x90) && vel > 0;
+          if (ch === 9 && isOn) {
+            events.push({ tick, note, vel });
+          }
+        } else if ((status & 0xf0) === 0xA0 || (status & 0xf0) === 0xB0 || (status & 0xf0) === 0xE0) {
+          // skip 2 data bytes
+          i += 2;
+        } else if ((status & 0xf0) === 0xC0 || (status & 0xf0) === 0xD0) {
+          // skip 1 data byte
+          i += 1;
+        } else if (status === 0xFF) {
+          const type = u8[i++];
+          const l = readVarLen(u8, i); i = l.next;
+          // We ignore meta content, including tempo; quantization uses PPQ only
+          i += l.value;
+        } else if (status === 0xF0 || status === 0xF7) {
+          const l = readVarLen(u8, i); i = l.next; i += l.value; // SysEx skip
+        } else {
+          // Unknown; try to skip one byte to avoid infinite loop
+          // This shouldn't happen often
+          // Prevent lockup
+          // eslint-disable-next-line no-unused-expressions
+          u8[i++];
+        }
+      }
+    }
+
+    return { events, tpq };
+  }
+
+  function quantizeMidiToChart(midi, opts = {}) {
+    const { spb } = getSettings();
+    const tpq = midi.tpq || 480;
+    const events = Array.isArray(midi.events) ? midi.events.slice() : [];
+    if (events.length === 0) return { notes: [], steps: 0, detectedFormat: 'midi' };
+    // Normalize so the earliest event is at step 0
+    const minTick = events.reduce((m, e) => Math.min(m, e.tick || 0), events[0].tick || 0);
+    const used = new Set();
+    const notes = [];
+    let maxStep = 0;
+    for (const ev of events) {
+      const lane = midiToLaneKey(ev.note);
+      if (!lane) continue;
+      const relTicks = Math.max(0, (ev.tick || 0) - minTick);
+      const stepFloat = (relTicks / tpq) * spb;
+      const step = Math.round(stepFloat);
+      const key = lane + ':' + step;
+      if (used.has(key)) continue;
+      used.add(key);
+      const vel = Math.max(0.2, Math.min(1.2, (ev.vel || 100) / 100));
+      notes.push({ lane, step, vel });
+      if (step > maxStep) maxStep = step;
+    }
+    return { notes, steps: maxStep + 1, detectedFormat: 'midi' };
   }
 
   function parseAndRender(text) {
@@ -875,7 +1040,16 @@
       if (laneIndex < 0) continue;
       const y = padT + laneIndex * rowH + rowH / 2;
       const x = padL + (note.step / totalSteps) * innerW;
-      drawNote(x, y, note.lane);
+      // Compute pulse intensity when the playhead reaches the note time
+      let pulse = 0;
+      if (state === 'playing') {
+        const nt = leadIn + note.step * stepDur; // absolute time of note
+        const dt = nt - t; // time until/after hit
+        const win = clamp(stepDur * 0.5, 0.06, 0.12); // tempo-aware pulse window (60–120 ms)
+        const a = Math.abs(dt);
+        if (a <= win) pulse = 1 - (a / win);
+      }
+      drawNote(x, y, note.lane, pulse);
     }
 
     // Playhead
@@ -915,17 +1089,32 @@
     return (lanes.find(l => l.key === key) || ALL_LANES.find(l => l.key === key));
   }
 
-  function drawNote(x, y, laneKey) {
+  function drawNote(x, y, laneKey, pulse = 0) {
     const lane = getLane(laneKey) || { color: '#8ab4f8' };
     const on = !!laneSoundEnabled[laneKey];
     ctx.save();
     ctx.translate(x, y);
+    // Base opacity respects lane mute; pulse adds subtle halo
     ctx.globalAlpha = on ? 1 : 0.35;
+
+    // Optional halo when the note is due right now
+    if (pulse > 0.0001) {
+      ctx.save();
+      ctx.globalAlpha *= 0.45 * pulse;
+      ctx.strokeStyle = lane.color;
+      ctx.lineWidth = 6 * pulse + 1;
+      const hw = 26 * 0.5, hh = 10 * 0.5, rr = 5;
+      roundRect(ctx, -hw, -hh, hw * 2, hh * 2, rr);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Main pill, slightly scaled on pulse
+    const s = 1 + 0.6 * Math.max(0, Math.min(1, pulse));
     ctx.fillStyle = lane.color;
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 2;
-    // draw rounded rectangle pill
-    const w = 26, h = 10, r = 5;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 2 + 1.5 * pulse;
+    const w = 26 * s, h = 10 * s, r = 5 * s;
     roundRect(ctx, -w/2, -h/2, w, h, r);
     ctx.fill();
     ctx.stroke();
@@ -1080,6 +1269,7 @@
   tsDenEl?.addEventListener('input', () => renderFrame(0));
   // Format-Badge klickbar zum Umschalten
   formatBadgeEl?.addEventListener('click', () => {
+    // Only cycle text-based formats; MIDI is detected from file headers
     currentFormatMode = (currentFormatMode === 'auto') ? 'classic' : (currentFormatMode === 'classic' ? 'guitar' : 'auto');
     parseAndRender(tabsEl.value);
   });
@@ -1112,6 +1302,37 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       try {
+        // MIDI detection first
+        if (await fileIsMidi(file)) {
+          const buf = await file.arrayBuffer();
+          let parsed;
+          try {
+            const midi = parseMidiArrayBuffer(buf);
+            parsed = quantizeMidiToChart(midi);
+          } catch (merr) {
+            console.error('MIDI Parsing fehlgeschlagen:', merr);
+            alert('Die MIDI‑Datei konnte nicht gelesen werden.');
+            return;
+          }
+          lastLoadedFile = file;
+          tabsEl.value = '';
+          // Build chart and render
+          chart = buildTimedChart(parsed);
+          updateCanvasSize();
+          state = 'idle';
+          if (stageEl) stageEl.scrollLeft = 0;
+          updateFormatBadge('auto', 'midi');
+          updateLegend('auto', 'midi');
+          rebuildSortedNotes();
+          renderSoundPanel();
+          renderLaneLabels();
+          renderMeta({ fields: {}, tracks: [] }, file);
+          renderFrame(0);
+          updateHudPosition();
+          return;
+        }
+
+        // Fallback: treat as text
         const text = await file.text();
         tabsEl.value = text;
         lastLoadedFile = file; // remember file for subsequent parses

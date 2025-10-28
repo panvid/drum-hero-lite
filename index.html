@@ -10,14 +10,14 @@
 <body>
   <header>
     <h1>Drum Hero Lite</h1>
-    <p>Füge deine Drum‑Tabs ein – entweder klassisches Drum‑ASCII (HH/SN/BD) oder Gitarren‑Tabs mit MIDI‑Zahlen (E/A/D/G/B/e) – und übe mit Raster, Abspielzeiger und optionalem Metronom.</p>
+    <p>Füge deine Drum‑Tabs ein – klassisches Drum‑ASCII (HH/SN/BD), Gitarren‑Tabs mit MIDI‑Zahlen (E/A/D/G/B/e) oder lade eine Standard‑MIDI‑Datei (.mid/.midi). Übe mit Raster, Abspielzeiger und optionalem Metronom.</p>
   </header>
 
   <section class="controls">
     <div class="row">
       <label class="file-label">
         <span class="icon" aria-hidden="true">📂</span>
-        <input id="fileInput" type="file" accept=".tab,.txt,text/plain" />
+        <input id="fileInput" type="file" accept=".tab,.txt,.mid,.midi,text/plain,audio/midi,audio/x-midi,application/x-midi" />
         Tab-Datei
       </label>
       <button id="btnParse"><span class="icon" aria-hidden="true">🪄</span>Tabs parsen</button>
