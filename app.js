@@ -10,6 +10,7 @@
   const leadInEl = $('#leadIn');
   const approachEl = $('#approach');
   const metronomeEl = $('#metronome');
+  const loopEl = $('#loop');
   const tsNumEl = $('#tsNum');
   const tsDenEl = $('#tsDen');
   const formatBadgeEl = document.getElementById('formatBadge');
@@ -134,6 +135,7 @@
   let startTime = 0; // performance.now() when playback started
   let pauseAccum = 0; // accumulated paused time
   let pauseStart = 0;
+  let effectiveLeadIn = 0; // runtime lead-in for current pass
 
 
   // Metronome
@@ -434,9 +436,10 @@
   let nextNoteIdx = 0;
 
   function noteTimeFromStep(step) {
-    const { bpm, spb, leadIn } = getSettings();
+    const { bpm, spb } = getSettings();
+    const li = Math.max(0, effectiveLeadIn || 0);
     const stepDur = (60 / bpm) / spb;
-    return leadIn + step * stepDur;
+    return li + step * stepDur;
   }
 
   function rebuildSortedNotes() {
@@ -974,7 +977,8 @@
 
   // Rendering (stationary grid with moving playhead)
   function renderFrame(t) {
-    const { bpm, spb, leadIn, tsNum } = getSettings();
+    const { bpm, spb, tsNum } = getSettings();
+    const li = Math.max(0, effectiveLeadIn || 0);
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
@@ -991,7 +995,7 @@
     // Step/grid metrics
     const stepDur = 60 / bpm / spb;
     const totalSteps = Math.max(1, chart.steps);
-    const totalDur = leadIn + totalSteps * stepDur;
+    const totalDur = li + totalSteps * stepDur;
 
     // Background and row separators (dim muted lanes)
     for (let i = 0; i < laneCount; i++) {
@@ -1044,7 +1048,7 @@
       // Compute pulse intensity when the playhead reaches the note time
       let pulse = 0;
       if (state === 'playing') {
-        const nt = leadIn + note.step * stepDur; // absolute time of note
+        const nt = li + note.step * stepDur; // absolute time of note
         const dt = nt - t; // time until/after hit
         const win = clamp(stepDur * 0.5, 0.06, 0.12); // tempo-aware pulse window (60–120 ms)
         const a = Math.abs(dt);
@@ -1054,7 +1058,7 @@
     }
 
     // Playhead
-    const playProg = (t - leadIn) / (totalSteps * stepDur);
+    const playProg = (t - li) / (totalSteps * stepDur);
     const clampedProg = Math.max(0, Math.min(1, playProg));
     const playX = padL + clampedProg * innerW;
     ctx.strokeStyle = 'rgba(255,255,255,0.7)';
@@ -1142,6 +1146,8 @@
       alert('Keine Noten geladen. Bitte Tabs einfügen und „Tabs parsen“ klicken oder eine Demo im Dropdown wählen.');
       return;
     }
+    const { leadIn } = getSettings();
+    effectiveLeadIn = Math.max(0, leadIn || 0);
     state = 'playing';
     startTime = nowSec();
     pauseAccum = 0;
@@ -1181,6 +1187,33 @@
   function loop() {
     if (state !== 'playing') return;
     const t = currentTime();
+
+    // End-of-song handling (loop or stop)
+    const { bpm, spb } = getSettings();
+    const li = Math.max(0, effectiveLeadIn || 0);
+    const stepDur = 60 / bpm / spb;
+    const totalSteps = Math.max(1, chart.steps || 0);
+    const totalDur = li + totalSteps * stepDur;
+    if (t >= totalDur - 0.0005) {
+      if (loopEl && loopEl.checked) {
+        // Restart from beginning; skip count-in from second pass on
+        effectiveLeadIn = 0;
+        startTime = nowSec();
+        pauseAccum = 0;
+        pauseStart = 0;
+        lastBeatIndex = -1;
+        rebuildSortedNotes();
+        syncSchedulerToTime(0);
+        if (stageEl && typeof stageEl.scrollLeft === 'number') stageEl.scrollLeft = 0;
+        renderFrame(0);
+        requestAnimationFrame(loop);
+        return;
+      } else {
+        state = 'stopped';
+        renderFrame(0);
+        return;
+      }
+    }
 
     // Metronome ticking on beats (accent on bar start)
     if (metronomeEl.checked) {
