@@ -400,3 +400,14 @@ canvas#stage { background: linear-gradient(180deg, #0b0e1c 0%, #0a0c17 100%); bo
 .file-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .file-meta .badge { background: #1b2038; color: #c8ccdf; border-color: #2a2f4a; }
 .file-meta .badge strong { font-weight: 700; }
+
+
+/* Language flag button */
+.lang-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; background: #1b2038; border: 1px solid #2a2f4a; color: #e6e9ef; cursor: pointer; }
+.lang-btn:hover { filter: brightness(1.12); }
+.lang-btn:active { transform: scale(0.98); }
+
+/* Language switch labels (DE/EN with icons) */
+.lang-switch { gap: 8px; }
+.lang-switch .mini { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #c8ccdf; opacity: 0.95; }
+.lang-switch .mini .icon { display: inline-block; line-height: 1; }

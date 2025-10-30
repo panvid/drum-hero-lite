@@ -3,14 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drum Hero Lite</title>
+  <title data-i18n="app.title">Drum Hero Lite</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>Drum Hero Lite</h1>
-    <p>Füge deine Drum‑Tabs ein – klassisches Drum‑ASCII (HH/SN/BD), Gitarren‑Tabs mit MIDI‑Zahlen (E/A/D/G/B/e) oder lade eine Standard‑MIDI‑Datei (.mid/.midi). Übe mit Raster, Abspielzeiger und optionalem Metronom.</p>
+    <div class="row" style="justify-content: space-between; align-items: center; gap: 12px;">
+      <div>
+        <h1 data-i18n="app.title">Drum Hero Lite</h1>
+        <p data-i18n="app.tagline">Füge deine Drum‑Tabs ein – klassisches Drum‑ASCII (HH/SN/BD), Gitarren‑Tabs mit MIDI‑Zahlen (E/A/D/G/B/e) oder lade eine Standard‑MIDI‑Datei (.mid/.midi). Übe mit Raster, Abspielzeiger und optionalem Metronom.</p>
+      </div>
+      <label class="switch lang-switch" data-i18n-title="lang.title" title="Sprache" aria-label="Sprache">
+        <span class="mini left"><span class="icon" aria-hidden="true">🇩🇪</span> DE</span>
+        <input id="langSwitch" type="checkbox" />
+        <span class="slider"></span>
+        <span class="mini right">EN <span class="icon" aria-hidden="true">🇬🇧</span></span>
+      </label>
+    </div>
   </header>
 
   <section class="controls">
@@ -18,66 +28,66 @@
       <label class="file-label">
         <span class="icon" aria-hidden="true">📂</span>
         <input id="fileInput" type="file" accept=".tab,.txt,.mid,.midi,text/plain,audio/midi,audio/x-midi,application/x-midi" />
-        Tab-Datei
+        <span data-i18n="controls.file.label">Tab‑Datei</span>
       </label>
-      <button id="btnParse"><span class="icon" aria-hidden="true">🪄</span>Tabs parsen</button>
-      <select id="demoSelect" title="Demo auswählen">
-        <option value="" selected disabled>Demo auswählen …</option>
-        <option value="classic">Demo: Drum‑ASCII</option>
-        <option value="guitar">Demo: Gitarren‑Tab (MIDI‑Zahlen)</option>
+      <button id="btnParse"><span class="icon" aria-hidden="true">🪄</span><span data-i18n="controls.parse">Tabs parsen</span></button>
+      <select id="demoSelect" data-i18n-title="controls.demo.placeholder" title="Demo auswählen">
+        <option value="" selected disabled data-i18n="controls.demo.placeholder">Demo auswählen …</option>
+        <option value="classic" data-i18n="controls.demo.classic">Demo: Drum‑ASCII</option>
+        <option value="guitar" data-i18n="controls.demo.guitar">Demo: Gitarren‑Tab (MIDI‑Zahlen)</option>
       </select>
     </div>
     <div class="row">
       <div id="fileMeta" class="file-meta"></div>
-      <div id="formatBadge" class="badge badge-muted clickable" title="Format erkennen/übersteuern – klicken zum Umschalten">Format: —</div>
+      <div id="formatBadge" class="badge badge-muted clickable" data-i18n-title="format.badge.title" title="Format erkennen/übersteuern – klicken zum Umschalten">Format: —</div>
     </div>
   </section>
   
   <section class="workspace">
     <div class="editor">
-      <label for="tabs">Tabs</label>
-      <textarea id="tabs" spellcheck="false" placeholder="Füge hier deine Songsterr/ASCII Drum Tabs ein..."></textarea>
-      <div id="legend" class="legend" aria-live="polite" aria-label="Legende"></div>
+      <label for="tabs" data-i18n="editor.label">Tabs</label>
+      <textarea id="tabs" spellcheck="false" data-i18n-placeholder="editor.placeholder" placeholder="Füge hier deine Songsterr/ASCII Drum Tabs ein..."></textarea>
+      <div id="legend" class="legend" aria-live="polite" data-i18n-aria="editor.label" aria-label="Legende"></div>
     </div>
 
     <div class="stage">
       <div id="laneLabels" class="lane-labels" aria-label="Spuren" role="group"></div>
       <canvas id="stage" width="900" height="600"></canvas>
-      <div class="hud" aria-label="Transport und Tempo">
-        <button id="btnStart" class="icon-btn" title="Start / Fortsetzen" aria-label="Start"><span class="icon" aria-hidden="true">▶️</span></button>
-        <button id="btnPause" class="icon-btn" title="Pause" aria-label="Pause"><span class="icon" aria-hidden="true">⏸️</span></button>
-        <button id="btnStop" class="icon-btn" title="Stop" aria-label="Stop"><span class="icon" aria-hidden="true">⏹️</span></button>
+      <div class="hud" data-i18n-aria="transport.title" aria-label="Transport und Tempo">
+        <button id="btnStart" class="icon-btn" data-i18n-title="btn.start.title" data-i18n-aria="btn.start.aria" title="Start / Fortsetzen" aria-label="Start"><span class="icon" aria-hidden="true">▶️</span></button>
+        <button id="btnPause" class="icon-btn" data-i18n-title="btn.pause.title" data-i18n-aria="btn.pause.aria" title="Pause" aria-label="Pause"><span class="icon" aria-hidden="true">⏸️</span></button>
+        <button id="btnStop" class="icon-btn" data-i18n-title="btn.stop.title" data-i18n-aria="btn.stop.aria" title="Stop" aria-label="Stop"><span class="icon" aria-hidden="true">⏹️</span></button>
         <div class="sep" aria-hidden="true"></div>
-        <label class="field" title="Beats pro Minute">
-          <span class="mini">BPM</span>
+        <label class="field" data-i18n-title="field.bpm.title" title="Beats pro Minute">
+          <span class="mini" data-i18n="field.bpm.mini">BPM</span>
           <input id="bpm" type="number" min="20" max="300" value="120" />
         </label>
-        <label class="field" title="Schritte pro Schlag (z. B. 4 = 16tel, 3 = Triolen)">
-          <span class="mini">SPB</span>
+        <label class="field" data-i18n-title="field.spb.title" title="Schritte pro Schlag (z. B. 4 = 16tel, 3 = Triolen)">
+          <span class="mini" data-i18n="field.spb.mini">SPB</span>
           <input id="spb" type="number" min="1" max="12" value="4" />
         </label>
-        <label class="field" title="Taktart (Zähler/Nenner)">
-          <span class="mini">Takt</span>
+        <label class="field" data-i18n-title="field.ts.title" title="Taktart (Zähler/Nenner)">
+          <span class="mini" data-i18n="field.ts.mini">Takt</span>
           <input id="tsNum" type="number" min="1" max="32" value="4" style="width:48px" />
           <span aria-hidden="true">/</span>
           <input id="tsDen" type="number" min="1" max="32" value="4" style="width:48px" />
         </label>
-        <label class="field" title="Einzähler in Sekunden">
-          <span class="mini">Einz</span>
+        <label class="field" data-i18n-title="field.leadIn.title" title="Einzähler in Sekunden">
+          <span class="mini" data-i18n="field.leadIn.mini">Einz</span>
           <input id="leadIn" type="number" min="0" step="0.5" value="2" />
         </label>
-        <label class="switch" title="Metronom an/aus">
+        <label class="switch" data-i18n-title="switch.metronome.title" title="Metronom an/aus">
           <input id="metronome" type="checkbox" />
           <span class="slider"></span>
-          <span class="mini">Met</span>
+          <span class="mini" data-i18n="switch.metronome.mini">Met</span>
         </label>
-        <label class="switch" title="Dauerschleife an/aus">
+        <label class="switch" data-i18n-title="switch.loop.title" title="Dauerschleife an/aus">
           <input id="loop" type="checkbox" />
           <span class="slider"></span>
-          <span class="mini">Loop</span>
+          <span class="mini" data-i18n="switch.loop.mini">Loop</span>
         </label>
         <div class="sep" aria-hidden="true"></div>
-        <button id="btnFullscreen" class="icon-btn" title="Vollbild ein" aria-label="Vollbild">
+        <button id="btnFullscreen" class="icon-btn" data-i18n-title="btn.fullscreen.titleOn" data-i18n-aria="btn.fullscreen.ariaOn" title="Vollbild ein" aria-label="Vollbild">
           <span class="icon" aria-hidden="true">⛶</span>
         </button>
       </div>
@@ -85,15 +95,16 @@
   </section>
 
   <footer>
-    <p>Made with <span aria-label="love" title="love">❤</span> in Leipzig · 
-      <a class="icon-link" href="help.html" title="Hilfe &amp; Format‑Hinweise" aria-label="Hilfe">❓</a>
+    <p><span data-i18n="footer.made">Made with</span> <span aria-label="love" title="love">❤</span> <span data-i18n="footer.in.city">in Leipzig</span> · 
+      <a class="icon-link" href="help.html" data-i18n-title="footer.help.title" data-i18n-aria="footer.help" title="Hilfe &amp; Format‑Hinweise" aria-label="Hilfe">❓</a>
       · 
-      <a class="icon-link" href="https://github.com/panvid/drum-hero-lite" target="_blank" rel="noopener" title="GitHub Repository" aria-label="GitHub">
+      <a class="icon-link" href="https://github.com/panvid/drum-hero-lite" target="_blank" rel="noopener" data-i18n-title="footer.github.title" title="GitHub Repository" aria-label="GitHub">
         <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       </a>
-      · Hinweis: Diese Seite und der Code sind KI‑generiert.</p>
+      · <span data-i18n="footer.note">Hinweis: Diese Seite und der Code sind KI‑generiert.</span></p>
   </footer>
 
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

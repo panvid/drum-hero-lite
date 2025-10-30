@@ -16,6 +16,8 @@
   const formatBadgeEl = document.getElementById('formatBadge');
   const legendEl = document.getElementById('legend');
   const laneLabelsEl = document.getElementById('laneLabels');
+  const I18N_t = (k, fb, params) => (window.I18N ? window.I18N.t(k, fb, params) : (fb || k));
+  const setLang = (l) => { if (window.I18N) window.I18N.setLang(l); };
   // Formatsteuerung: immer Auto, optional Override durch Klick auf Badge
   let currentFormatMode = 'auto'; // 'auto' | 'classic' | 'guitar' | 'midi'
 
@@ -59,23 +61,23 @@
 
   // Alle möglichen Spuren (wird später dynamisch gefiltert)
   const ALL_LANES = [
-    { key: 'hhc', color: '#ffd166', label: 'Hi‑Hat geschlossen', abbr: 'HC' },
-    { key: 'hhp', color: '#ffc14d', label: 'Hi‑Hat Pedal', abbr: 'HP' },
-    { key: 'hho', color: '#ffb347', label: 'Hi‑Hat offen', abbr: 'HO' },
-    { key: 'cr1', color: '#f7a8f0', label: 'Crash 1', abbr: 'CA' },
-    { key: 'cr2', color: '#f58ae6', label: 'Crash 2', abbr: 'CB' },
-    { key: 'ride', color: '#9ad1ff', label: 'Ride', abbr: 'RD' },
-    { key: 'ridebell', color: '#8bc7ff', label: 'Ride Bell', abbr: 'RB' },
-    { key: 'china', color: '#f68f6f', label: 'China', abbr: 'CH' },
-    { key: 'splash', color: '#f6cf6f', label: 'Splash', abbr: 'SP' },
-    { key: 'sn', color: '#ef476f', label: 'Snare', abbr: 'SN' },
-    { key: 't1', color: '#d4e157', label: 'Tom High', abbr: 'TH' },
-    { key: 't2', color: '#b0d445', label: 'Tom High‑Mid', abbr: 'TM' },
-    { key: 't3', color: '#8cc64a', label: 'Tom Low‑Mid', abbr: 'LM' },
-    { key: 't4', color: '#5cc06e', label: 'Tom Low', abbr: 'TL' },
-    { key: 't5', color: '#41b58a', label: 'Floor Tom High', abbr: 'FH' },
-    { key: 't6', color: '#2aa57a', label: 'Floor Tom Low', abbr: 'FL' },
-    { key: 'bd', color: '#06d6a0', label: 'Bassdrum', abbr: 'BD' },
+    { key: 'hhc', color: '#ffd166', label: (I18N_t('lane.hhc','Hi‑Hat geschlossen')), abbr: 'HC' },
+    { key: 'hhp', color: '#ffc14d', label: (I18N_t('lane.hhp','Hi‑Hat Pedal')), abbr: 'HP' },
+    { key: 'hho', color: '#ffb347', label: (I18N_t('lane.hho','Hi‑Hat offen')), abbr: 'HO' },
+    { key: 'cr1', color: '#f7a8f0', label: (I18N_t('lane.cr1','Crash 1')), abbr: 'CA' },
+    { key: 'cr2', color: '#f58ae6', label: (I18N_t('lane.cr2','Crash 2')), abbr: 'CB' },
+    { key: 'ride', color: '#9ad1ff', label: (I18N_t('lane.ride','Ride')), abbr: 'RD' },
+    { key: 'ridebell', color: '#8bc7ff', label: (I18N_t('lane.ridebell','Ride Bell')), abbr: 'RB' },
+    { key: 'china', color: '#f68f6f', label: (I18N_t('lane.china','China')), abbr: 'CH' },
+    { key: 'splash', color: '#f6cf6f', label: (I18N_t('lane.splash','Splash')), abbr: 'SP' },
+    { key: 'sn', color: '#ef476f', label: (I18N_t('lane.sn','Snare')), abbr: 'SN' },
+    { key: 't1', color: '#d4e157', label: (I18N_t('lane.t1','Tom High')), abbr: 'TH' },
+    { key: 't2', color: '#b0d445', label: (I18N_t('lane.t2','Tom High‑Mid')), abbr: 'TM' },
+    { key: 't3', color: '#8cc64a', label: (I18N_t('lane.t3','Tom Low‑Mid')), abbr: 'LM' },
+    { key: 't4', color: '#5cc06e', label: (I18N_t('lane.t4','Tom Low')), abbr: 'TL' },
+    { key: 't5', color: '#41b58a', label: (I18N_t('lane.t5','Floor Tom High')), abbr: 'FH' },
+    { key: 't6', color: '#2aa57a', label: (I18N_t('lane.t6','Floor Tom Low')), abbr: 'FL' },
+    { key: 'bd', color: '#06d6a0', label: (I18N_t('lane.bd','Bassdrum')), abbr: 'BD' },
   ];
 
   let chart = { notes: [], steps: 0 };
@@ -157,7 +159,7 @@
       laneSoundEnabled[lane.key] = enabled; // persist default
       const wrap = document.createElement('label');
       wrap.className = 'lane';
-      wrap.title = lane.label || lane.key.toUpperCase();
+      wrap.title = (lane.label || lane.key.toUpperCase());
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.id = id;
@@ -204,12 +206,12 @@
       nameEl.className = 'name';
       nameEl.textContent = laneInfo.label || lane.key.toUpperCase();
       nameEl.title = nameEl.textContent;
-      el.title = `${laneInfo.label || lane.key.toUpperCase()} – Ton an/aus`;
+      el.title = `${laneInfo.label || lane.key.toUpperCase()} – ${I18N_t('sound.onoff','Ton an/aus')}`;
 
       // Mini switch
       const swWrap = document.createElement('label');
       swWrap.className = 'mini-switch';
-      swWrap.title = 'Ton an/aus';
+      swWrap.title = I18N_t('sound.onoff','Ton an/aus');
       const sw = document.createElement('input');
       sw.type = 'checkbox';
       sw.id = `lane-sw-${lane.key}`;
@@ -761,17 +763,21 @@
 
   function updateFormatBadge(mode, detected) {
     if (!formatBadgeEl) return;
-    let text = 'Format: ';
-    const map = { classic: 'Drum‑ASCII', guitar: 'Gitarren‑Tab', midi: 'MIDI' };
+    let text = I18N_t('format.prefix','Format:') + ' ';
+    const map = { 
+      classic: I18N_t('format.mode.classic','Drum‑ASCII'), 
+      guitar: I18N_t('format.mode.guitar','Gitarren‑Tab'), 
+      midi: I18N_t('format.mode.midi','MIDI') 
+    };
     if (mode === 'auto') {
       if (detected && map[detected]) {
         text += map[detected];
       } else {
-        text += '—';
+        text += I18N_t('format.auto.none','—');
       }
     } else {
-      const label = map[mode] || '—';
-      text += `${label} (erzwungen)`;
+      const label = map[mode] || I18N_t('format.auto.none','—');
+      text += `${label} ${I18N_t('format.forced','(erzwungen)')}`;
     }
     formatBadgeEl.textContent = text;
   }
@@ -789,13 +795,13 @@
         const num = laneKeyToMidi(l.key);
         const keyTxt = (num != null) ? String(num) : '—';
         const full = l.label || l.key.toUpperCase();
-        const title = (num != null) ? `${keyTxt} = ${full}` + (on ? ' – verwendet' : ' – nicht verwendet') : `${full}`;
+        const title = (num != null) ? `${keyTxt} = ${full}` + (on ? I18N_t('legend.used',' – verwendet') : I18N_t('legend.notUsed',' – nicht verwendet')) : `${full}`;
         return `<span class="chip${offCls}" title="${title}"><span class=\"key\">${keyTxt}</span><span class=\"dot\" style=\"background:${l.color}\"></span><span class=\"nm\">${full}</span></span>`;
       }).join(' ');
       legendEl.style.display = 'flex';
       legendEl.innerHTML = chips;
       const count = used.size;
-      legendEl.setAttribute('aria-label', `Legende: Zahlen und Instrumente; aktuell verwendet: ${count}`);
+      legendEl.setAttribute('aria-label', I18N_t('legend.aria.guitar',`Legende: Zahlen und Instrumente; aktuell verwendet: ${count}`, { count }));
       return;
     }
 
@@ -806,13 +812,13 @@
       const offCls = on ? '' : ' off';
       const abbr = l.abbr || l.key.toUpperCase();
       const full = l.label || l.key.toUpperCase();
-      const title = `${abbr} = ${full}` + (on ? ' – verwendet' : ' – nicht verwendet');
+      const title = `${abbr} = ${full}` + (on ? I18N_t('legend.used',' – verwendet') : I18N_t('legend.notUsed',' – nicht verwendet'));
       return `<span class="chip${offCls}" title="${title}"><span class="key">${abbr}</span><span class="dot" style="background:${l.color}"></span><span class="nm">${full}</span></span>`;
     }).join(' ');
     legendEl.style.display = 'flex';
     legendEl.innerHTML = chips;
     const count = used.size;
-    legendEl.setAttribute('aria-label', `Legende: Abkürzungen mit Erklärung; aktuell verwendet: ${count}`);
+    legendEl.setAttribute('aria-label', I18N_t('legend.aria.classic',`Legende: Abkürzungen mit Erklärung; aktuell verwendet: ${count}`, { count }));
   }
 
   async function fileIsMidi(file) {
@@ -1035,7 +1041,7 @@
     ctx.font = '14px system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, \'Noto Sans\', sans-serif';
     if (lanes.length === 0) {
       ctx.fillStyle = 'rgba(230,233,239,0.7)';
-      ctx.fillText('Keine Noten geladen', padL + innerW / 2, padT + innerH / 2);
+      ctx.fillText(I18N_t('canvas.noNotes','Keine Noten geladen'), padL + innerW / 2, padT + innerH / 2);
     }
     ctx.restore();
 
@@ -1143,7 +1149,7 @@
 
   function start() {
     if (!chart.notes.length) {
-      alert('Keine Noten geladen. Bitte Tabs einfügen und „Tabs parsen“ klicken oder eine Demo im Dropdown wählen.');
+      alert(I18N_t('alert.noNotes','Keine Noten geladen. Bitte Tabs einfügen und „Tabs parsen“ klicken oder eine Demo im Dropdown wählen.'));
       return;
     }
     const { leadIn } = getSettings();
@@ -1262,8 +1268,8 @@
   function updateFullscreenBtn() {
     if (!btnFullscreen) return;
     const on = isFullscreen();
-    btnFullscreen.title = on ? 'Vollbild aus' : 'Vollbild ein';
-    btnFullscreen.setAttribute('aria-label', on ? 'Vollbild verlassen' : 'Vollbild');
+    btnFullscreen.title = on ? I18N_t('btn.fullscreen.titleOff','Vollbild aus') : I18N_t('btn.fullscreen.titleOn','Vollbild ein');
+    btnFullscreen.setAttribute('aria-label', on ? I18N_t('btn.fullscreen.ariaOff','Vollbild verlassen') : I18N_t('btn.fullscreen.ariaOn','Vollbild'));
     btnFullscreen.innerHTML = `<span class="icon" aria-hidden="true">${on ? '🗗' : '⛶'}</span>`;
   }
   btnFullscreen?.addEventListener('click', async () => {
@@ -1293,6 +1299,22 @@
     renderFrame(0);
     updateHudPosition();
     updateLaneLabelsPosition();
+  });
+
+  // Re-apply UI strings when language changes
+  document.addEventListener('langchange', () => {
+    try {
+      // Update lane labels and sound panel to reflect translated names
+      renderSoundPanel();
+      renderLaneLabels();
+      // Refresh format badge and legend with current effective mode
+      updateFormatBadge(currentFormatMode, chart.detectedFormat || null);
+      updateLegend(currentFormatMode, chart.detectedFormat || null);
+      // Update fullscreen button labels
+      updateFullscreenBtn();
+      // Repaint canvas for no-notes hint
+      renderFrame(0);
+    } catch(_) {}
   });
 
   // Immediate refresh on settings change
@@ -1345,7 +1367,7 @@
             parsed = quantizeMidiToChart(midi);
           } catch (merr) {
             console.error('MIDI Parsing fehlgeschlagen:', merr);
-            alert('Die MIDI‑Datei konnte nicht gelesen werden.');
+            alert(I18N_t('alert.midiReadError','Die MIDI‑Datei konnte nicht gelesen werden.'));
             return;
           }
           lastLoadedFile = file;
@@ -1376,7 +1398,7 @@
         parseAndRender(text);
       } catch (err) {
         console.error('Datei lesen fehlgeschlagen:', err);
-        alert('Konnte die Datei nicht lesen.');
+        alert(I18N_t('alert.fileReadError','Konnte die Datei nicht lesen.'));
       }
     });
   }
@@ -1467,17 +1489,17 @@
     const f = (meta && meta.fields) || {};
     const t = (meta && meta.tracks) || [];
     if (file && file.name) {
-      parts.push(`<span class="badge badge-muted" title="Dateiname und Größe"><strong>📄</strong>&nbsp;${escapeHtml(file.name)}&nbsp;(${((file.size || 0) / 1024).toFixed(1)}&nbsp;KB)</span>`);
+      parts.push(`<span class="badge badge-muted" title="${I18N_t('meta.nameSize','Dateiname und Größe')}"><strong>📄</strong>&nbsp;${escapeHtml(file.name)}&nbsp;(${((file.size || 0) / 1024).toFixed(1)}&nbsp;KB)</span>`);
     }
-    if (f.title) parts.push(`<span class="badge" title="Titel"><strong>🎵</strong>&nbsp;${escapeHtml(f.title)}</span>`);
-    if (f.artist) parts.push(`<span class="badge" title="Künstler"><strong>👤</strong>&nbsp;${escapeHtml(f.artist)}</span>`);
-    if (f.album) parts.push(`<span class="badge" title="Album"><strong>💿</strong>&nbsp;${escapeHtml(f.album)}</span>`);
-    if (f.author) parts.push(`<span class="badge" title="Autor"><strong>✍️</strong>&nbsp;${escapeHtml(f.author)}</span>`);
-    if (typeof f.tempo === 'number') parts.push(`<span class="badge" title="Tempo (BPM)"><strong>⏱️</strong>&nbsp;${Math.round(f.tempo)}&nbsp;BPM</span>`);
-    if (f.time) parts.push(`<span class="badge" title="Taktart"><strong>🕒</strong>&nbsp;${escapeHtml(f.time)}</span>`);
+    if (f.title) parts.push(`<span class="badge" title="${I18N_t('meta.title','Titel')}"><strong>🎵</strong>&nbsp;${escapeHtml(f.title)}</span>`);
+    if (f.artist) parts.push(`<span class="badge" title="${I18N_t('meta.artist','Künstler')}"><strong>👤</strong>&nbsp;${escapeHtml(f.artist)}</span>`);
+    if (f.album) parts.push(`<span class="badge" title="${I18N_t('meta.album','Album')}"><strong>💿</strong>&nbsp;${escapeHtml(f.album)}</span>`);
+    if (f.author) parts.push(`<span class="badge" title="${I18N_t('meta.author','Autor')}"><strong>✍️</strong>&nbsp;${escapeHtml(f.author)}</span>`);
+    if (typeof f.tempo === 'number') parts.push(`<span class="badge" title="${I18N_t('meta.tempo','Tempo (BPM)')}"><strong>⏱️</strong>&nbsp;${Math.round(f.tempo)}&nbsp;BPM</span>`);
+    if (f.time) parts.push(`<span class="badge" title="${I18N_t('meta.time','Taktart')}"><strong>🕒</strong>&nbsp;${escapeHtml(f.time)}</span>`);
     if (Array.isArray(f.stepsPerBeatList) && f.stepsPerBeatList.length) {
       const list = f.stepsPerBeatList.join('/');
-      parts.push(`<span class="badge" title="Schritte pro Schlag"><strong>🧭</strong>&nbsp;SPB:&nbsp;${escapeHtml(list)}</span>`);
+      parts.push(`<span class="badge" title="${I18N_t('meta.spb','Schritte pro Schlag')}"><strong>🧭</strong>&nbsp;SPB:&nbsp;${escapeHtml(list)}</span>`);
     }
     if (t.length) {
       const trackLines = t
